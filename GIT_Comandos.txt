@@ -1,0 +1,8 @@
+# En la pagina de Git una vez creado el Proyecto se debe copiar
+# la direccion que que nos otorga Git similar a "https://github.com/jhsoft8705/Mi-pagi..."
+
+git init 
+git add . 
+git commit -m "mi tarea"  
+git remote add origin https://github.com/jhsoft8705/Mi-pagi...
+git push   origin master  
