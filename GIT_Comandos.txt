@@ -3,6 +3,6 @@
 
 git init 
 git add . 
-git commit -m "mi tarea"  
+git commit -m "PDV - Codeigniter 4 v.4.6.0 y PHP 8.3.15 con Mysql"  
 git remote add origin https://github.com/jhsoft8705/Mi-pagi...
-git push   origin master  
+git push origin main  

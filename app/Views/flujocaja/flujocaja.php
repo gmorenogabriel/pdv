@@ -5,8 +5,9 @@
         <hr color="cyan"></hr>
           <div>
             <p>
-                  <span class="float-left"><a href="<?php echo base_url(); ?>/flujocaja/entradas" class="btn btn-primary pull-left">Ingresos</a></span>
-                  <span class="float-right"><a href="<?php echo base_url(); ?>/flujocaja/salidas" class="btn btn-danger pull-right">Egresos</a></span>
+                  <span class="float-left"><a href="<?php echo base_url(); ?>flujocaja/entradas" class="btn btn-primary pull-left"> Ingresos</a></span>
+                  <span class="float-right"><a href="<?php echo base_url(); ?>flujocaja/salidas" class="btn btn-danger pull-right"> Egresos</a></span>
+				  <span class="float-right"><a href="<?php echo base_url(); ?>flujocaja/generaExcel" class="btn btn-danger pull-right"> Excel</a></span>
             </p>   
                 </div>
               </div>  

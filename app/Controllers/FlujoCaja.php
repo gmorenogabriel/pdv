@@ -5,6 +5,13 @@ use CodeIgniter\I18n\Time;
 use App\Models\FlujoCajaModel;
 use App\Libraries\Toastr;
 
+//require FCPATH . 'vendor/autoload.php';
+//require_once __DIR__ . '/../vendor/autoload.php';
+//require_once COMPOSER_PATH;
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 class FlujoCaja extends BaseController{
 
     protected $flujocaja;
@@ -76,7 +83,7 @@ class FlujoCaja extends BaseController{
         if($this->session->has('id_usuario') === false) { 
             return redirect()->to(base_url()); 
         }
-        $locale = $this->request->getLocale();  
+	
         // echo $locale;
         // echo lang('Translate.form_validation_required');
         $flujocaja = $this->flujocaja->findAll();
@@ -219,4 +226,163 @@ class FlujoCaja extends BaseController{
                 echo view('footer');
         } 
     }
+	public function generaExcel(){
+	   try {
+            // Simulación de datos de entrada
+			$flujocaja = $this->flujocaja->findAll();
+			$data = [ 
+				'titulo' => 'Flujo de Caja',
+				'datos'  => $flujocaja,
+				'fecha'  => $this->fecha_hoy,
+			];
+	           // Crear una nueva hoja de cálculo
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+			$sheet->setShowGridlines(false);
+
+            // Agregar título y fecha en el cabezal
+			$tituloConFecha = 'Flujo de Caja al: ' . $data['fecha'];
+			$sheet->setCellValue('A1', $tituloConFecha);
+
+            //$sheet->setCellValue('A1', $data['titulo']);
+			$sheet->getStyle('A1')->applyFromArray([
+				'fill' => [
+					'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+					'startColor' => [
+						'rgb' => '4F81BD', // Fondo azul
+					],
+				],
+				'font' => [
+					'color' => ['rgb' => 'FFFFFF'], // Letras blancas
+					'bold' => true,
+					'size' => 14, // Tamaño de la fuente
+				],
+				'alignment' => [
+					'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+				],
+			]);
+            $sheet->mergeCells('A1:F1'); // Combinar celdas para el título
+            $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+			$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+			
+
+            //$sheet->setCellValue('G1', 'Fecha: ' . $data['fecha']);
+            //$sheet->getStyle('G1')->getAlignment()->setHorizontal('right');
+
+            // Agregar encabezados para las columnas
+            $headers = ['ID', 'Fecha', 'Descripción', 'Entrada', 'Salida', 'Saldo'];
+            $columnIndex = 'A';
+            foreach ($headers as $header) {
+                $sheet->setCellValue($columnIndex . '2', $header);
+                $sheet->getStyle($columnIndex . '2')->getFont()->setBold(true);
+				$sheet->getStyle($columnIndex . '2')->applyFromArray([
+					'fill' => [
+						'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+						'startColor' => [
+							'rgb' => '0CB7F2', // Color celeste en formato hexadecimal
+						],
+					],
+				]);
+
+                $columnIndex++;
+            }
+
+            // Agregar los datos en las filas
+            $rowIndex = 3; // Comenzamos desde la fila 3
+            foreach ($data['datos'] as $row) {
+                $sheet->setCellValue('A' . $rowIndex, $row['id']);
+                $sheet->setCellValue('B' . $rowIndex, $row['fecha']);
+                $sheet->setCellValue('C' . $rowIndex, $row['descripcion']);
+                $sheet->setCellValue('D' . $rowIndex, $row['entrada']);
+                $sheet->setCellValue('E' . $rowIndex, $row['salida']);
+                $sheet->setCellValue('F' . $rowIndex, $row['saldo']);
+                $rowIndex++;
+            }
+			// Descripcion seteada a la Izquierda
+			$sheet->getStyle('A')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+			// Obtener la última fila con datos
+			$lastRow = $sheet->getHighestRow();
+
+			// Aplicar estilo a la columna C (Descripción)
+			$sheet->getStyle("C1:C{$lastRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+// Obtener la última fila con datos
+$lastRow = $sheet->getHighestRow();
+
+// Recorrer la columna 'C' y eliminar espacios en blanco
+for ($row = 1; $row <= $lastRow; $row++) {
+    $cellValue = $sheet->getCell("C{$row}")->getValue();
+    if (!is_null($cellValue)) {
+        // Eliminar espacios en blanco
+        $cleanValue = str_replace(' ', '', $cellValue); // Quita todos los espacios en blanco
+        $sheet->setCellValue("C{$row}", $cleanValue);
+    }
+}
+
+            // Guardar el archivo Excel en la carpeta writable
+            $filePath = ROOTPATH . 'writable/Reporte_FlujoCaja.xlsx';
+            $writer = new Xlsx($spreadsheet);
+            $writer->save($filePath);
+
+            // Confirmar que el archivo fue generado
+            return 'Archivo Excel generado exitosamente en: ' . $filePath;
+        } catch (\Exception $e) {
+            // Manejo de errores
+            return 'Error al generar el archivo Excel: ' . $e->getMessage();
+        }
+    }
+	
+	public function generaExcelvie(){
+		$i=0;
+	    $i = $i++;
+	    $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Hello World !');
+        $writer = new Xlsx($spreadsheet);
+		
+		try{
+			$fileName = ROOTPATH . 'writable/Excel_' . $i . '.xlsx';
+			$writer->save($fileName);
+			$flujocaja = $this->flujocaja->findAll();
+			$data = [ 
+				'titulo' => 'Flujo de Caja',
+				'datos'  => $flujocaja,
+				'fecha'  => $this->fecha_hoy,
+			];
+			  // Definir las cabeceras necesarias para la descarga del archivo
+		   /* return $this->response->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+				->setHeader('Content-Disposition', 'attachment; filename="' . $fileName . '"')
+				->setHeader('Cache-Control', 'max-age=0')
+				->setBody($writer->save('php://output')); // Enviar el archivo directamente al navegador
+			*/
+					$msgToast = [
+						's2Titulo' => 'FlujoCaja->', 
+						's2Texto' => 'Se genero el archivo: ' . $fileName,
+						's2Icono' => 'info',
+						's2Toast' => 'true'
+					];
+					echo view('header');
+					echo view('sweetalert2', $msgToast);
+					//echo view('flujocaja/index', $data);
+					echo view('footer');
+		//			return redirect()->to('flujocaja');
+
+			return redirect()->to(base_url('flujocaja'));
+
+			} catch (\Exception $e) {
+				throw new \Exception('Error al generar el archivo: ' . $fileName . '. Detalles: ' . $e->getMessage());
+					$msgToast = [
+						's2Titulo' => 'FlujoCaja->', 
+						's2Texto' => 'NO se genero el archivo: ' . $fileName,
+						's2Icono' => 'error',
+						's2Toast' => 'true'
+					];
+					echo view('header');
+					echo view('sweetalert2', $msgToast);
+//					echo view('flujocaja/index', $msgToast);
+					echo view('footer');
+					return redirect()->to(base_url('flujocaja'));
+
+			}
+	}
 }

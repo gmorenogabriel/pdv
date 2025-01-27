@@ -28,13 +28,14 @@ $routes->setAutoRoute(false);
  */
 
 $routes->group('/',['namespace' => 'App\Controllers'],function($routes){
-        $routes->get('login',            'Usuarios::login',    ['as' => 'usuarios']);   // Web de Ingreso http://localhost:8084/pdv/public/login
-		$routes->get('dash',             'Dashboard::index',    ['as' => 'dash']); 
-        $routes->post('usuarios/valida', 'Usuarios::valida',   ['as' => 'valida']);
-		$routes->get('inicio',           'Inicio::index',      ['as' => 'inicio']);
-        $routes->get('flujocaja',        'FlujoCaja::index',   ['as' => 'flujocaja']);
-		$routes->get('productos',        'Productos::index',   ['as' => 'productos']);
-        $routes->get('unidades',         'Unidades::index',   ['as' => 'unidades']);		
+        $routes->get('login',            		'Usuarios::login',    		['as' => 'usuarios']);   // Web de Ingreso http://localhost:8084/pdv/public/login
+		$routes->get('dash',             		'Dashboard::index',    		['as' => 'dash']); 
+        $routes->post('usuarios/valida', 		'Usuarios::valida',   		['as' => 'valida']);
+		$routes->get('inicio',           		'Inicio::index',      		['as' => 'inicio']);
+        $routes->get('flujocaja',        		'FlujoCaja::index',   		['as' => 'flujocaja']);
+		$routes->get('flujocaja/generaExcel',	'FlujoCaja::generaExcel',   ['as' => 'flujoexcel']);
+		$routes->get('productos',        		'Productos::index',   		['as' => 'productos']);
+        $routes->get('unidades',         		'Unidades::index',   		['as' => 'unidades']);		
         $routes->get('categorias',       'Categorias::index',   ['as' => 'categorias']);				
         $routes->get('clientes',         'Clientes::index',    ['as' => 'clientes']);		
         $routes->get('compras',          'Compras::index',     ['as' => 'compras']);				
