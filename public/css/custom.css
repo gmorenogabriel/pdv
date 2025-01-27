@@ -1,0 +1,82 @@
+/*!
+ * Bootstrap v3.3.7 (http://getbootstrap.com)
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ *//*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
+canvas {
+    display: block;
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+}
+
+.credit-card-div  span { padding-top:10px; }
+.credit-card-div img { padding-top:30px; }
+.credit-card-div .small-font { font-size:9px; }
+.credit-card-div .pad-adjust { padding-top:10px; }
+table.dataTable.dataTable_width_auto {
+  width: auto;
+}
+/* ventas anuales dgi                      */
+.example1 th, td { clear: both; }
+.example1 th, td { padding:0px !important; } 
+.example1 th, td { margin-bottom:0px !important; } 
+.example1 th, td { margin-top:0px !important; }
+/* .example1 .altofilas tbody, th, td { margin-auto; }*/
+.example1 tbody, th, td { bottom:0px !important; }
+/* .example1 tbody, th, td { text-align: right; } */
+.example1 tbody, th, td {	
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 12px;
+	line-height: 1.42857143;
+	color: #333333;
+	background-color: #fff;
+	}
+.msg-error {
+	color : black;
+}
+.msg-error-rojo {
+	color : red;
+	font-weight: bold;
+}
+/*# sourceMappingURL=bootstrap.min.css.map */
+.toastr {
+		position:absolute;
+		left:20em;
+		top:-25px;
+		opacity:0,9;
+		color: red;
+		z-index: 999;
+	}
+#image-preview{
+	display:none;
+	width : 250px;
+	height : 300px;
+}
+/* Subir imagen cupload */
+div.rounded {
+    width: 100%;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 5px;
+}
+label {
+    display: block;
+}
+input {
+    display: block;
+}
+#previewTable {
+    width: 100%;
+}
+/* Utilizado para el Fondo y Contorno Textbox  */
+body, input{
+   font-family: Calibri, Arial;
+}
+input {
+   font-size: 15px;
+}
+.focus {
+   border: 2px solid #000000;
+   background-color: #b3ffff;
+}
