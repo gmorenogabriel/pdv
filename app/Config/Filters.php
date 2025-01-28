@@ -70,7 +70,7 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-			'cors' => ['except' => ['datatables/*','flujocaja/*']],
+			  'cors' => ['except' => ['datatables/*', 'flujocaja/generaPdf*']],
 			// 'honeypot',
             // 'csrf',
             // 'invalidchars',

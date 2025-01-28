@@ -1,5 +1,6 @@
 <?php namespace App\Controllers;
 
+
 use App\Controllers\BaseController;
 use CodeIgniter\I18n\Time;
 use App\Models\FlujoCajaModel;
@@ -11,12 +12,19 @@ use App\Libraries\Toastr;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf; // Usa Mpdf como motor para PDF
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use FPDF;
+use setasign\Fpdi\Fpdi;
 
 class FlujoCaja extends BaseController{
 
-    protected $flujocaja;
-    protected $reglasEntrada, $reglasSalida;
-    protected $clase;
+    protected $flujocaja, $myTime, $router, $_method, $controlador, $clase;
+    protected $reglasEntrada, $reglasSalida, $tituloConFecha;
+	protected $pdf, $dir;
+    //protected $this->clase;
+	 // Declaramos la propiedad
+    protected $empresa, $tit, $ruc, $today, $fecha_hoy ;
 
     public function __construct()
     {
@@ -32,13 +40,16 @@ class FlujoCaja extends BaseController{
         // Obtenemos la Fecha del Sistema
         $myTime = Time::now('America/Montevideo', 'la_UY');
         $today       = Time::createFromDate();            // Uses current year, month, and day
+		//d($today->toLocalizedString('dd/MM/yyyy'));   // March 9, 2016)
+		//d($time = Time::createFromFormat('Y-M-j', $today->toLocalizedString('dd/MM/yyyy'), 'la_UY'));
+		//d($today);
         $this->fecha_hoy  = $today->toLocalizedString('dd/MM/yyyy');   // March 9, 2016
 
         // Obtenemos el nombre del Controlador/Metodo
         $router = \Config\Services::router();
         $_method = $router->methodName();
         $_controller = $router->controllerName();         
-        $controlador = explode('\\', $_controller) ;
+        $controlador = explode('\\', $_controller);
         $this->clase = $controlador[max(array_keys($controlador))] ;        
 
         // Variables para nuestras reglas de validac.del Form
@@ -57,7 +68,6 @@ class FlujoCaja extends BaseController{
                     'required'=> 'El campo "Descripción" es obligatorio.',
                     'min_length' => 'El largo del campo {field} debe ser mayor a 5.',
                     'max_length' => 'El largo maximo {field} debe ser menor o igual a 200.',
-
                 ]
             ]
         ];
@@ -103,7 +113,7 @@ class FlujoCaja extends BaseController{
         $flujocaja = $this->flujocaja->findAll();
         $data = [ 
             'titulo' => 'Egresos de dinero',
-            'datos' => $flujocaja,
+            'datos'  => $flujocaja,
             'fecha'  => $this->fecha_hoy,
         ];
 		echo view('header');
@@ -111,7 +121,6 @@ class FlujoCaja extends BaseController{
 		echo view('footer');
 	}
     public function entradas(){
-            
         $data = [
             'titulo' => 'Ingreso de dinero',
             'fecha'  => $this->fecha_hoy,
@@ -213,7 +222,6 @@ class FlujoCaja extends BaseController{
                 'fecha'      => $this->fecha_hoy,
                 'validation' => $this->validator,
         ];
-
             $msgToast = [
                     's2Titulo' => 'FlujoCaja->', 
                     's2Texto' => 'No se validaron las reglas.',
@@ -266,10 +274,6 @@ class FlujoCaja extends BaseController{
             $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
 			$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
 			
-
-            //$sheet->setCellValue('G1', 'Fecha: ' . $data['fecha']);
-            //$sheet->getStyle('G1')->getAlignment()->setHorizontal('right');
-
             // Agregar encabezados para las columnas
             $headers = ['ID', 'Fecha', 'Descripción', 'Entrada', 'Salida', 'Saldo'];
             $columnIndex = 'A';
@@ -306,21 +310,22 @@ class FlujoCaja extends BaseController{
 
 			// Aplicar estilo a la columna C (Descripción)
 			$sheet->getStyle("C1:C{$lastRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-// Obtener la última fila con datos
-$lastRow = $sheet->getHighestRow();
+			// Obtener la última fila con datos
+			$lastRow = $sheet->getHighestRow();
 
-// Recorrer la columna 'C' y eliminar espacios en blanco
-for ($row = 1; $row <= $lastRow; $row++) {
-    $cellValue = $sheet->getCell("C{$row}")->getValue();
-    if (!is_null($cellValue)) {
-        // Eliminar espacios en blanco
-        $cleanValue = str_replace(' ', '', $cellValue); // Quita todos los espacios en blanco
-        $sheet->setCellValue("C{$row}", $cleanValue);
-    }
-}
+			// Recorrer la columna 'C' y eliminar espacios en blanco
+			for ($row = 1; $row <= $lastRow; $row++) {
+				$cellValue = $sheet->getCell("C{$row}")->getValue();
+				if (!is_null($cellValue)) {
+					// Eliminar espacios en blanco
+					$cleanValue = str_replace(' ', '', $cellValue); // Quita todos los espacios en blanco
+					$sheet->setCellValue("C{$row}", $cleanValue);
+				}
+			}
 
             // Guardar el archivo Excel en la carpeta writable
-            $filePath = ROOTPATH . 'writable/Reporte_FlujoCaja.xlsx';
+			$filename = 'FlujoCaja_' . date('Ymd') . '.xlsx';			
+            $filePath = ROOTPATH . 'writable/' . $filename;
             $writer = new Xlsx($spreadsheet);
             $writer->save($filePath);
 
@@ -332,57 +337,139 @@ for ($row = 1; $row <= $lastRow; $row++) {
         }
     }
 	
-	public function generaExcelvie(){
-		$i=0;
-	    $i = $i++;
-	    $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setCellValue('A1', 'Hello World !');
-        $writer = new Xlsx($spreadsheet);
-		
-		try{
-			$fileName = ROOTPATH . 'writable/Excel_' . $i . '.xlsx';
-			$writer->save($fileName);
-			$flujocaja = $this->flujocaja->findAll();
-			$data = [ 
-				'titulo' => 'Flujo de Caja',
-				'datos'  => $flujocaja,
-				'fecha'  => $this->fecha_hoy,
+	// Nueva Clase PDF
+
+public function generaPdf_no()
+{
+    // Simulación de datos de entrada
+    $flujocaja = $this->flujocaja->findAll();
+    $data = [ 
+        'titulo' => 'Flujo de Caja',
+        'datos'  => $flujocaja,
+        'fecha'  => $this->fecha_hoy,
+    ];
+
+    // Crear una instancia del PDF
+    //$pdf = new FPDF();
+	$pdf = new FPDF();
+    $pdf->AddPage("landscape");
+    
+    // Crear el archivo PDF y configuraciones para la descarga
+    $filename = 'FlujoCaja_' . date('Ymd') . '.pdf';
+    $filePath = FCPATH . 'writable/' . $filename;
+    
+    // Asegurarse de que no haya salida previa al PDF
+    ob_start(); // Inicia el buffer de salida para evitar que se envíen datos al navegador
+    
+    // Cabeceras de respuesta para el navegador
+	header('<!DOCTYPE html>');
+    header('Content-Type: application/pdf');
+    header('Content-Disposition: inline; filename="' . $filename . '"');
+    header('Content-Transfer-Encoding: binary');
+    header('Accept-Ranges: bytes');	
+
+
+    // Establecer título con fecha
+   // $tituloConFecha = 'Flujo de Caja al: ' . $data['fecha'];
+   // $pdf->SetFont('Arial', 'B', 14); // Usar Arial si no tienes Helvetica
+   // $pdf->SetTextColor(255, 255, 255);
+   // $pdf->SetFillColor(79, 129, 189); // Color de fondo azul
+   // $pdf->Cell(0, 10, $tituloConFecha, 0, 1, 'C', true);
+    $pdf->Cell(40, 10, 'Hola Mundo');
+    $pdf->Output($filepath, 'I'); // Muestra el PDF en línea
+	 ob_end_clean();  // Limpia el buffer de salida antes de generar el PDF
+	 exit;
+    // Espacio antes de los encabezados
+
+
+/*
+	$pdf->Ln(10);
+    // Agregar encabezados de columna
+    $headers = ['ID', 'Fecha', 'Descripción', 'Entrada', 'Salida', 'Saldo'];
+    $pdf->SetFont('Arial', 'B', 12); // Usar Arial
+    $pdf->SetFillColor(12, 183, 242); // Color celeste
+    $pdf->Cell(30, 10, $headers[0], 1, 0, 'C', true);
+    $pdf->Cell(30, 10, $headers[1], 1, 0, 'C', true);
+    $pdf->Cell(50, 10, $headers[2], 1, 0, 'L', true);
+    $pdf->Cell(30, 10, $headers[3], 1, 0, 'R', true);
+    $pdf->Cell(30, 10, $headers[4], 1, 0, 'R', true);
+    $pdf->Cell(30, 10, $headers[5], 1, 1, 'R', true);
+
+    // Rellenar los datos
+    $pdf->SetFont('Arial', '', 12); // Usar Arial
+    foreach ($data['datos'] as $row) {
+	    //var_dump($row['id'] . ' - ' . $row['descripcion'] );
+        $pdf->Cell(30, 10, $row['id'] , 1, 0, 'C');
+        $pdf->Cell(30, 10, $row['fecha'] , 1, 0, 'C');
+        $pdf->Cell(50, 10, $row['descripcion'] , 1, 0, 'L'); // "L"-left Descripción alineada a la izquierda
+        $pdf->Cell(30, 10, $row['entrada'] , 1, 0, 'R');
+        $pdf->Cell(30, 10, $row['salida'] , 1, 0, 'R');
+        $pdf->Cell(30, 10, $row['saldo'] , 1, 1, 'R');
+    }
+
+    // Generar el PDF en el navegador (mostrar en línea)
+    $pdf->Output('F', $filename);  // 'I' muestra el PDF en el navegador
+
+    ob_end_clean();  // Limpia el buffer de salida antes de generar el PDF
+	exit;
+*/
+}
+	public function generaPdf()
+	{
+		// Simulación de datos de entrada
+		$flujocaja = $this->flujocaja->findAll();
+		$data = [ 
+			'titulo' => 'Flujo de Caja',
+			'datos'  => $flujocaja,
+			'fecha'  => $this->fecha_hoy,
 			];
-			  // Definir las cabeceras necesarias para la descarga del archivo
-		   /* return $this->response->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-				->setHeader('Content-Disposition', 'attachment; filename="' . $fileName . '"')
-				->setHeader('Cache-Control', 'max-age=0')
-				->setBody($writer->save('php://output')); // Enviar el archivo directamente al navegador
-			*/
-					$msgToast = [
-						's2Titulo' => 'FlujoCaja->', 
-						's2Texto' => 'Se genero el archivo: ' . $fileName,
-						's2Icono' => 'info',
-						's2Toast' => 'true'
-					];
-					echo view('header');
-					echo view('sweetalert2', $msgToast);
-					//echo view('flujocaja/index', $data);
-					echo view('footer');
-		//			return redirect()->to('flujocaja');
+   // Crear una instancia de FPDI
+        $pdf = new Fpdi();
 
-			return redirect()->to(base_url('flujocaja'));
+        // Agregar una página
+        $pdf->AddPage("landscape");
 
-			} catch (\Exception $e) {
-				throw new \Exception('Error al generar el archivo: ' . $fileName . '. Detalles: ' . $e->getMessage());
-					$msgToast = [
-						's2Titulo' => 'FlujoCaja->', 
-						's2Texto' => 'NO se genero el archivo: ' . $fileName,
-						's2Icono' => 'error',
-						's2Toast' => 'true'
-					];
-					echo view('header');
-					echo view('sweetalert2', $msgToast);
-//					echo view('flujocaja/index', $msgToast);
-					echo view('footer');
-					return redirect()->to(base_url('flujocaja'));
+        // Configurar la fuente
+        $pdf->SetFont('Arial', 'B', 16);
 
-			}
+ // Agregar encabezados de columna
+    $headers = ['ID', 'Fecha', 'Descripción', 'Entrada', 'Salida', 'Saldo'];
+    $pdf->SetFont('Arial', 'B', 12); // Usar Arial
+    $pdf->SetFillColor(12, 183, 242); // Color celeste
+    $pdf->Cell(07, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $headers[0]), 1, 0, 'C', true);
+	//$pdf->Cell(07, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Texto con tildes: á, é, í, ó, ú y ñ.'), 1, 0, 'C', true);
+    $pdf->Cell(30, 10, $headers[1], 1, 0, 'C', true);
+    $pdf->Cell(80, 10,iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $headers[2]), 1, 0, 'L', true);
+    $pdf->Cell(30, 10, $headers[3], 1, 0, 'R', true);
+    $pdf->Cell(30, 10, $headers[4], 1, 0, 'R', true);
+    $pdf->Cell(30, 10, $headers[5], 1, 1, 'R', true);
+	
+    // Rellenar los datos
+    $pdf->SetFont('Arial', '', 12); // Usar Arial
+    foreach ($data['datos'] as $row) {
+	    //var_dump($row['id'] . ' - ' . $row['descripcion'] );
+        $pdf->Cell(7, 10, $row['id'] , 1, 0, 'C');
+		$time = strtotime($row['fecha']);
+		$newformat = date('Y-m-d',$time);
+        $pdf->Cell(30, 10, $newformat, 1, 0, 'C');
+        $pdf->Cell(80, 10, ltrim(rtrim(substr(iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $row['descripcion']),0,78))) , 1, 0, 'L'); // "L"-left Descripción alineada a la izquierda
+        $pdf->Cell(30, 10, $row['entrada'] , 1, 0, 'R');
+        $pdf->Cell(30, 10, $row['salida'] , 1, 0, 'R');
+        $pdf->Cell(30, 10, $row['saldo'] , 1, 1, 'R');
+    }
+        // Agregar un espacio
+        $pdf->Ln(10);
+
+        // Establecer el título del documento
+        $pdf->SetFont('Arial', '', 12);
+     //   $pdf->Cell(0, 10, mb_convert_encoding('Este es un ejemplo de cómo usar FPDI en CodeIgniter 4.', 'ISO-8859-1', 'UTF-8'), 0, 1);
+
+        // Salida del archivo PDF al navegador
+        return $this->response
+            ->setContentType('application/pdf')
+            ->setBody($pdf->Output('S')); // La opción 'S' envía el contenido como cadena		
+		
 	}
+	
+	// Fin Clase
 }

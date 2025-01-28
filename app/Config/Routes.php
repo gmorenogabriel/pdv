@@ -34,6 +34,7 @@ $routes->group('/',['namespace' => 'App\Controllers'],function($routes){
 		$routes->get('inicio',           		'Inicio::index',      		['as' => 'inicio']);
         $routes->get('flujocaja',        		'FlujoCaja::index',   		['as' => 'flujocaja']);
 		$routes->get('flujocaja/generaExcel',	'FlujoCaja::generaExcel',   ['as' => 'flujoexcel']);
+		$routes->get('flujocaja/generaPdf',	'FlujoCaja::generaPdf',   ['as' => 'flujopdf']);
 		$routes->get('productos',        		'Productos::index',   		['as' => 'productos']);
         $routes->get('unidades',         		'Unidades::index',   		['as' => 'unidades']);		
         $routes->get('categorias',       'Categorias::index',   ['as' => 'categorias']);				

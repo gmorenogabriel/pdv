@@ -6,3 +6,11 @@ git add .
 git commit -m "PDV - Codeigniter 4 v.4.6.0 y PHP 8.3.15 con Mysql"  
 git remote add origin https://github.com/jhsoft8705/Mi-pagi...
 git push origin main  
+
+
+-- Git Comando de Actualizacion
+git status
+git add .
+git commit -m "Mensaje descriptivo de los cambios realizados"
+# O reemplaza 'main' con el nombre de tu rama
+git push origin main  

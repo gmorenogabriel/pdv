@@ -3,14 +3,19 @@
     <div class="container-fluid">
     <h1 class="mt-2"><?php echo $titulo . " - ". $fecha ?></h1>
         <hr color="cyan"></hr>
-          <div>
-            <p>
-                  <span class="float-left"><a href="<?php echo base_url(); ?>flujocaja/entradas" class="btn btn-primary pull-left"> Ingresos</a></span>
-                  <span class="float-right"><a href="<?php echo base_url(); ?>flujocaja/salidas" class="btn btn-danger pull-right"> Egresos</a></span>
-				  <span class="float-right"><a href="<?php echo base_url(); ?>flujocaja/generaExcel" class="btn btn-danger pull-right"> Excel</a></span>
-            </p>   
-                </div>
-              </div>  
+		   <div class="d-flex justify-content-between">
+				<!-- Botones alineados a la izquierda -->
+				<div>
+				  <span class="float-left me-2"><a href="<?php echo base_url(); ?>flujocaja/entradas" class="btn btn-primary pull-left"> Ingresos</a></span>
+				  <span class="float-right me-2"><a href="<?php echo base_url(); ?>flujocaja/salidas" class="btn btn-danger pull-right"> Egresos</a></span>
+				</div>
+				<!-- Botones alineados a la derecha -->
+				<div>
+					<span class="float-right me-2"><a href="<?php echo base_url('flujocaja/generaExcel'); ?>" class="btn btn-success pull-right"><i class="fas fa-file-excel"></i> Excel</a></span>
+					<span class="float-right me-2"><a href="<?php echo base_url('flujocaja/generaPdf'); ?>" class="btn btn-success pull-right"><i class="fas fa-file-pdf"></i> Pdf</a></span>
+				</div>
+            </div>  
+	</div>
               &nbsp;
                    <div class="row">
                     <div class="col-md-12">
