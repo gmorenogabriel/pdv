@@ -13,75 +13,180 @@
                 </footer>
             </div>
         </div>
-<!--
-  <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-  <script src="<?php echo base_url(); ?>js/jquery-3.6.1.min.js"></script>
-  <script src="<?php echo base_url(); ?>js/bootstrap-4.3.1.min.js"></script>
-  -->
-<script src="<?php echo base_url(); ?>js/Chart.js"></script>			
-<script type="text/javascript">
-  console.log($); // Esto debe mostrar la función de jQuery si está cargada correctamente
-var popCanvas = $("#popChart");
-var popCanvas = document.getElementById("popChart");
-var popCanvas = document.getElementById("popChart").getContext("2d");
-
-var barChart = new Chart(popCanvas, {
-  type: 'bar',
-  data: {
-    labels: ["China", "India", "United States", "Indonesia", "Brazil", "Pakistan", "Nigeria", "Bangladesh", "Russia", "Japan"],
-    datasets: [{
-      label: 'Population',
-      data: [1379302771, 1281935911, 326625791, 260580739, 207353391, 204924861, 190632261, 157826578, 142257519, 126451398],
-      backgroundColor: [
-        'rgba(255, 99, 132, 0.6)',
-        'rgba(54, 162, 235, 0.6)',
-        'rgba(255, 206, 86, 0.6)',
-        'rgba(75, 192, 192, 0.6)',
-        'rgba(153, 102, 255, 0.6)',
-        'rgba(255, 159, 64, 0.6)',
-        'rgba(255, 99, 132, 0.6)',
-        'rgba(54, 162, 235, 0.6)',
-        'rgba(255, 206, 86, 0.6)',
-        'rgba(75, 192, 192, 0.6)',
-        'rgba(153, 102, 255, 0.6)'
-      ]
-    }]
-  }
-});
-console.log ("Ejecutando en el Documento");
-<!-- Graficos de la pagina de Inicio -->
-window.onload = function() {
-//$(document).ready(function(){
-	  $('#modal-confirma').on('show.bs.modal', function(e){
-        $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+<!-- Al final de tu archivo footer.php -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="<?php echo base_url(); ?>font-awesome/js/all.js" crossorigin="anonymous"></script>
+<script src="<?php echo base_url(); ?>js/sweetalert2.all.min.js" crossorigin="anonymous"></script>
+<!-- <script src="<?php echo base_url(); ?>js/Chart.js"></script> -->
+<script>
+    $(document).ready(function() {
+		console.log ("Ejecutando en el Documento");
+            $('#miTabla').DataTable({
+			    lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "Todos"] ],
+				pageLength: 10, 		// Valor predeterminado para mostrar
+                paging: true,           // Habilita la paginación
+                searching: true,        // Habilita la barra de búsqueda
+                lengthChange: true,     // Habilita el selector "Mostrar X filas"
+                ordering: true,         // Habilita el ordenamiento de columnas
+                info: true,             // Muestra información de la tabla
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" // Traducción al español
+                }
+            });
+function generarArchivo(titulo, mensaje, url, botonDescarga = "Descargar archivo") {
+    // Mostrar alerta mientras se procesa
+//	console.log(`Titulo: ${titulo},  Mensaje: ${mensaje}, URL: ${url}`);
+    Swal.fire({
+        title: titulo,
+        text: mensaje,
+        icon: 'info',
+        showConfirmButton: false,
+        allowOutsideClick: false,
     });
-    console.log('Pagina Inicio.php document.ready(function()');
 
-    var base_url="<?php echo base_url();?>";
-    var year = (new Date).getFullYear();
-	console.log("----------------a--------");
-console.log(document.getElementById('myBarChart1')); // Debería mostrar el elemento <canvas>
-console.log("----------------aa--------");
+    // Realizar la solicitud al servidor con AJAX
+    $.ajax({
+        url: url, // URL dinámica
+        type: 'GET', // Cambia a 'POST' si es necesario
+        success: function (response) {
+            if (response.status === 'success') {
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: response.message,
+                    icon: 'success',
+                    showConfirmButton: true,
+                    confirmButtonText: botonDescarga, // Texto dinámico para el botón
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Redirigir para descargar el archivo
+                        window.location.href = response.downloadUrl;
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: response.message,
+                    icon: 'error',
+                    showConfirmButton: true,
+                });
+            }
+        },
+        error: function () {
+            Swal.fire({
+                title: 'Error',
+                text: 'Ocurrió un problema al procesar la solicitud.' . titulo,
+                icon: 'error',
+                showConfirmButton: true,
+            });
+        },
+    });
+}
+//
+// Para todas los programas hay que cambiar el Boton de Generacion
+//
+/* Categorias */
+$('#btnGeneraExcelCateg').on('click', function (e) {
+	//Version Dinamica donde paso parametros
+    e.preventDefault();
+    generarArchivo(
+        'Generando Excel...', // Título de la alerta
+        'Por favor, espera mientras se genera el archivo.', // Mensaje de la alerta
+        'categorias/generaExcel', // URL donde se realiza la solicitud
+        'Descargar Excel' // Texto del botón de descarga
+    );
+});
 
-    // Barras
-	document.addEventListener("DOMContentLoaded", function() {
-		datagrafico(base_url,year);
-	});
+$('#btnGeneraPdfCateg').on('click', function (e) {
+	//Version Dinamica donde paso parametros
+    e.preventDefault();
+	console.log('btnGeneraPdfCateg');
+    generarArchivo(
+        'Generando Pdf...', // Título de la alerta
+        'Por favor, espera mientras se genera el archivo.', // Mensaje de la alerta
+        'categorias/generaPdf', // URL donde se realiza la solicitud
+        'Descargar Pdf' // Texto del botón de descarga
+    );
+});
+/* Flujo Caja */
+$('#btnGeneraExcelFlujo').on('click', function (e) {
+	//Version Dinamica donde paso parametros
+    e.preventDefault();
+    generarArchivo(
+        'Generando Excel...', // Título de la alerta
+        'Por favor, espera mientras se genera el archivo.', // Mensaje de la alerta
+        'flujocaja/generaExcel', // URL donde se realiza la solicitud
+        'Descargar Excel' // Texto del botón de descarga
+    );
+});
 
-//	document.addEventListener("DOMContentLoaded", function() {
-//        dataGraficaCompras(base_url);
+$('#btnGeneraPdfFlujo').on('click', function (e) {
+	//Version Dinamica donde paso parametros
+    e.preventDefault();
+	console.log('btnGeneraPdfFlujo');
+    generarArchivo(
+        'Generando Pdf...', // Título de la alerta
+        'Por favor, espera mientras se genera el archivo.', // Mensaje de la alerta
+        'flujocaja/generaPdf', // URL donde se realiza la solicitud
+        'Descargar Pdf' // Texto del botón de descarga
+    );
+});
 
-//    });
-	// $("#year").on("change", function(){
-    //     year = $(this).val();
-    //     datagrafico(base_url,year);
-    // });
-    // Pie
+$('#btnGeneraExcelCategVIEJO').on('click', function (e) {
+	//Funcion sin parametros ESTATICA
+    e.preventDefault(); // Evitar comportamiento predeterminado
 
-document.addEventListener("DOMContentLoaded", function () {
-	console.log(document.getElementById('myBarChart'));
-	console.log(document.getElementById('myPieChart'));
+    // Mostrar alerta mientras se procesa
+    Swal.fire({
+        title: 'Generando Excel...',
+        text: 'Por favor, espera mientras se genera el archivo.',
+        icon: 'info',
+        showConfirmButton: false,
+        allowOutsideClick: false,
+    });
+
+    // Realizar la solicitud al servidor con AJAX
+    $.ajax({
+        url: 'categorias/generaExcel', // URL del controlador
+        type: 'GET', // O 'POST' si es necesario
+        success: function (response) {
+            if (response.status === 'success') {
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: response.message,
+                    icon: 'success',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Descargar archivo',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Redirigir para descargar el archivo
+                        window.location.href = response.downloadUrl;
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: response.message,
+                    icon: 'error',
+                    showConfirmButton: true,
+                });
+            }
+        },
+        error: function () {
+            Swal.fire({
+                title: 'Error',
+                text: 'Ocurrió un problema al procesar la solicitud.',
+                icon: 'error',
+                showConfirmButton: true,
+            });
+        },
+    });
+});
+
+	document.addEventListener("DOMContentLoaded", function () {
+		console.log(document.getElementById('myBarChart'));
+		console.log(document.getElementById('myPieChart'));
 
     function datagrafico(base_url, year) {
         var paramCodigos = [];
@@ -94,8 +199,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     var obj = JSON.parse(data); // Convertir el JSON recibido
                     console.log("Datos recibidos:", obj);
 
-console.log('Labels:', labels); // ¿Muestra un array con etiquetas válidas?
-console.log('Data:', data);     // ¿Muestra un array con datos numéricos?
+		console.log('Labels:', labels); // ¿Muestra un array con etiquetas válidas?
+		console.log('Data:', data);     // ¿Muestra un array con datos numéricos?
 
                     // Procesar los datos recibidos
                     $.each(obj, function (i, item) {
@@ -142,9 +247,9 @@ console.log('Data:', data);     // ¿Muestra un array con datos numéricos?
         var paramCategorias = [];
         var paramTotales = [];
         console.log("function dataGraficaCompras");
-console.log("----------------b--------");
-console.log(document.getElementById('myBarChart1')); // Debería mostrar el elemento <canvas>
-console.log("----------------bb--------");
+		console.log("----------------b--------");
+		console.log(document.getElementById('myBarChart1')); // Debería mostrar el elemento <canvas>
+		console.log("----------------bb--------");
 
         $.post(`${base_url}compras/graficastockCategorias`)
             .done(function (data) {
@@ -161,60 +266,27 @@ console.log("----------------bb--------");
                     // Crear gráfico de pastel
                     var ctxPie = document.getElementById("myPieChart1");
                     var ctx = document.getElementById('myBarChart');
-new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'],
-        datasets: [{
-            label: 'Ventas',
-            data: [10, 20, 30, 40, 50],
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: {
-                beginAtZero: true
-            }
-        }
-    }
-});
-					
-					
-					
-					// if (ctxPie) {
-                        // new Chart(ctxPie, {
-                            // type: "pie",
-                            // data: {
-                                // labels: paramCategorias,
-                                // datasets: [{
-                                    // data: paramTotales,
-                                    // backgroundColor: [
-                                        // "rgba(255, 99, 132, 0.6)",
-                                        // "rgba(54, 162, 235, 0.6)",
-                                        // "rgba(255, 206, 86, 0.6)",
-                                    // ],
-                                // }],
-                            // },
-                            // options: {
-                                // responsive: true,
-                                // plugins: {
-                                    // legend: { position: "top" },
-                                    // title: { display: true, text: "Distribución de Compras por Categoría" },
-                                // },
-                            // },
-                        // });
-                    // } else {
-                        // console.error("El canvas 'myPieChart1' no se encontró.");
-                    // }
-					
-					
-					
-					
-					
+					new Chart(ctx, {
+						type: 'bar',
+						data: {
+							labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'],
+							datasets: [{
+								label: 'Ventas',
+								data: [10, 20, 30, 40, 50],
+								backgroundColor: 'rgba(75, 192, 192, 0.2)',
+								borderColor: 'rgba(75, 192, 192, 1)',
+								borderWidth: 1
+							}]
+						},
+						options: {
+							responsive: true,
+							scales: {
+								y: {
+									beginAtZero: true
+								}
+							}
+						}
+					});				
                 } catch (e) {
                     console.log("Error al parsear el JSON:", e, data);
                 }
@@ -230,10 +302,9 @@ new Chart(ctx, {
 
     datagrafico(base_url, year);
     dataGraficaCompras(base_url);
-	
+	});
 <!-- Fin de los graficos de la pagina de Inicio ->
-
-    
+   
     function generaCodQR(){
         let baseURL= "<?php echo base_url(); ?>";
         console.log('Estoy en generaCodQR()');
@@ -257,7 +328,7 @@ new Chart(ctx, {
             });
         }
 
-        function generaCodQRNuevo(){
+    function generaCodQRNuevo(){
             let baseURL= "<?php echo base_url(); ?>";
             console.log('Estoy en generaCodQRNuevo()');
             var codigo = $("#codigo").val();                 // Id del Producto
@@ -307,7 +378,6 @@ new Chart(ctx, {
 		}
 	});
 
-
     function getImgData() {
         const files = chooseFile.files[0];
         console.log('1-getImgData() '+ files);
@@ -319,10 +389,7 @@ new Chart(ctx, {
             imgPreview.innerHTML = '<img src="' + this.result + '" />';
             });    
         }
-    }
-    
-
-    $(document).ready(function(){    
+    }  
 
     console.log('Inicio document.ready(function()');
     $("#new_id_barcod").on("change", function(){
@@ -355,7 +422,7 @@ new Chart(ctx, {
             generaCodQRNuevo();
         });
 
-        $("#id_barcod").on("change", function(){
+    $("#id_barcod").on("change", function(){
             // Cuando viene de la Edicion
             alert('2- LLEGUE #id_barcod change');
             console.log('Estoy en #id_barcod on Change');
@@ -389,12 +456,14 @@ new Chart(ctx, {
             console.log('voy a generaCodQR()');
             generaCodQR();
         });
-        $("#id_barcod").change(function(){
+    $("#id_barcod").change(function(){
           //alert('1- LLEGUE #id_barcod change');
           readURL(img_producto);
          });
 
          /* --- Preview IMAGE Productos/Edit */
+		 
+		 /*
          $("#preview").on("change", function(){
             // Cuando viene de la Edicion
             //alert('1- LLEGUE #preview change');
@@ -403,7 +472,7 @@ new Chart(ctx, {
             var fileName = document.getElementById('img_producto').files[0].name;
             console.log('2-function preview archivo seleccionado fileName : ' + fileName);
 
-            var baseURL= "<?php echo base_url(); ?>";
+            var baseURL= "< ?  php echo base_url(); ?>";
             console.log('3-function preview baseURL : ' + baseURL);
             var id = $("#id").val();                 // Id del Producto
             console.log('4-function preview cargado id: '+id);
@@ -420,10 +489,10 @@ new Chart(ctx, {
           readURL(img_producto);
          });
 
-        });
     /* --------------------------------------- */
     /* Tabla general para todas las List Views */
-    /* --------------------------------------- */	
+    /* --------------------------------------- */
+	/*
     $('#reportes').DataTable( {
             dom: 'Bfrtip',
             buttons: [
@@ -501,11 +570,11 @@ new Chart(ctx, {
                 },
             }
         });
-
     $('#example1').DataTable({
         /* Configuramos 5  filas por pagina */
-        "iDisplayLength": 5, 
+/*     "iDisplayLength": 5, 
         /* Ordenamos la tabla de Ventas por Fecha Descendente  */
+		/*
         "language": {
             "lengthMenu": "Mostrar _MENU_ registros por página",
             "zeroRecords": "No se encontraron resultados en su bÃºsqueda",
@@ -522,6 +591,32 @@ new Chart(ctx, {
             },
         }
     });	
+	// Tiempo Maximo de Inactividad para realizar el LogOut
+	// 3 Minutos
+	(function() {
+        let time;
+        const maxInactivity = 3 * 60 * 1000; // 3 minutos en milisegundos
+
+        function resetTimer() {
+            clearTimeout(time);
+            time = setTimeout(logout, maxInactivity);
+        }
+ 
+        function logout() {
+            alert("Sesión cerrada por inactividad.");
+            window.location.href = "< ? = base_url('usuarios/logout') ?>"; // Ruta para cerrar sesión
+        }
+
+        window.onload = resetTimer;
+        document.onmousemove = resetTimer;
+        document.onkeypress = resetTimer;
+        document.onclick = resetTimer;
+        document.onscroll = resetTimer;
+    })();
+	
+*/
+	});
+</script>
 <!-- /script> -->
 </body>
 </html>

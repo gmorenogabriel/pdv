@@ -12,8 +12,20 @@ $user_session = session();
         <title>PDV - SB Admin</title>
 		<link href="<?php echo base_url(); ?>css/style.min.css" rel="stylesheet" />
 		<link type="text/css" href="<?php echo base_url();?>css/styles.css" rel="stylesheet" />
-		<script src="<?php echo base_url(); ?>font-awesome/css/all.min.css" rel="stylesheet">></script>
-		<script src="<?php echo base_url(); ?>font-awesome/js/all.js" crossorigin="anonymous"></script>
+		<script src="<?php echo base_url(); ?>font-awesome/css/font-awesome.all.min.css" rel="stylesheet">></script>
+		
+		    <!-- DataTables -->
+    <link rel="stylesheet" href="<?php echo base_url();?>js/datatables.net-bs/css/datatables.bootstrap.min.css">
+    <link rel="stylesheet" href="<?php echo base_url();?>js/datatables-export/css/buttons.datatables.min.css">
+	<link rel="stylesheet" href="<?php echo base_url();?>css/bootstrap.css">
+
+<!-- DataTables CSS -->
+<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<!-- DataTables JS 
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+-->
+
     </head>
         <body class="sb-nav-fixed">
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
@@ -69,16 +81,16 @@ $user_session = session();
 
                           <!-- 2da DIVISION SideBar Productos-->
 							<a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#menuProductos" aria-expanded="false" aria-controls="menuProductos">
-                            <div class="sb-nav-link-icon"><i class="fa fa-eye"></i></div>
-                                Productos
+                            <div class="sb-nav-link-icon"><i class="fa-brands fa-product-hunt"></i></div>
+							Productos
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
                              <!-- ITEM dentro de Productos -->
                             <div class="collapse" id="menuProductos" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
 									<a class="nav-link" href="<?php echo base_url(); ?>productos"><i class="fa fa-eye" aria-hidden="true"></i>&nbsp; Productos</a>
-                                    <a class="nav-link" href="<?php echo base_url(); ?>unidades"><i class="fa fa-eye" aria-hidden="true"></i>&nbsp; Unidades</a>
-                                    <a class="nav-link" href="<?php echo base_url(); ?>categorias"><i class="fa fa-eye" aria-hidden="true"></i>&nbsp; Categorías</a>
+                                    <a class="nav-link" href="<?php echo base_url(); ?>unidades"><i class="fa-brands fa-unity" aria-hidden="true"></i>&nbsp; Unidades</a>
+                                    <a class="nav-link" href="<?php echo base_url(); ?>categorias"><i class="fa-solid fa-layer-group"></i>&nbsp; Categorías</a>
                                 </nav>
                             </div>							                      
 
@@ -92,13 +104,13 @@ $user_session = session();
                             <div class="collapse" id="menuClientes" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                                 <nav class="sb-sidenav-menu-nested nav">
 									<a class="nav-link" href="<?php echo base_url(); ?>compras/nuevo"><i class="fa fa-cash-register" aria-hidden="true"></i>&nbsp; Nueva Compra</a>
-                                    <a class="nav-link" href="<?php echo base_url(); ?>compras"><i class="fa fa-eye" aria-hidden="true"></i>&nbsp; Compras</a>
+                                    <a class="nav-link" href="<?php echo base_url(); ?>compras"><i class="fa-solid fa-basket-shopping"></i></i>&nbsp; Compras</a>
                                 </nav>
                             </div>							                      
                        
 					   <!-- 4ta DIVISION SideBar Reportes-->
 							<a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#menuReportes" aria-expanded="false" aria-controls="menuReportes">
-                            <div class="sb-nav-link-icon"><i class="fas fa-print"></i></div>
+                            <div class="sb-nav-link-icon"><i class="fa-solid fa-print"></i></div>
                                 Reportes
                                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
@@ -123,9 +135,9 @@ $user_session = session();
                                     <a class="nav-link" href="<?php echo base_url(); ?>configuracion"><i class="fas fa-fw fa-wrench"></i>&nbsp; Configuración</a>
                                     <a class="nav-link" href="<?php echo base_url(); ?>monedas"><i class="fas fa-coins"></i>&nbsp; Monedas</a>
                                     <a class="nav-link" href="<?php echo base_url(); ?>usuarios"><i class="fas fa-user"></i>&nbsp; Usuarios</a>
-                                    <a class="nav-link" href="<?php echo base_url(); ?>menus"><i class="fas fa-user"></i>&nbsp; Menus</a>
-                                    <a class="nav-link" href="<?php echo base_url(); ?>roles"><i class="fas fa-user"></i>&nbsp; Roles</a>
-                                    <a class="nav-link" href="<?php echo base_url(); ?>permisos"><i class="fas fa-user"></i>&nbsp; Permisos</a>									
+                                    <a class="nav-link" href="<?php echo base_url(); ?>menus"><i class="fa-solid fa-cubes-stacked"></i>&nbsp; Menus</a>
+                                    <a class="nav-link" href="<?php echo base_url(); ?>roles"><i class="fa-regular fa-face-rolling-eyes"></i>&nbsp; Roles</a>
+                                    <a class="nav-link" href="<?php echo base_url(); ?>permisos"><i class="fa-solid fa-thumbs-up"></i>&nbsp; Permisos</a>									
                                 </nav>
                             </div>		
     

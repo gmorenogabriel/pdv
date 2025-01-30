@@ -317,7 +317,8 @@ echo "</pre>";
                     // dd($datosSesion);
                     // echo "----session------------------ " . "\n";
                     // dd($session);
-                    return redirect()->to(base_url() . 'inicio');
+                return redirect()->to(base_url() . 'inicio');
+				//return redirect()->to(base_url() . 'dash');
 					//return redirect()->to(base_url() . 'dash');
                 }else{
                     $data = [

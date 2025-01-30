@@ -4,6 +4,7 @@ use App\Controllers\BaseController;
 use App\Models\ComprasModel;
 use App\Models\ProductosModel;
 use App\Models\ClientesModel;
+use App\Models\CategoriasModel;
 
 class Dashboard extends BaseController{
 	
@@ -18,6 +19,7 @@ class Dashboard extends BaseController{
 		$this->compraModel = new ComprasModel;
 		$this->productoModel = new ProductosModel;
 		$this->clientesModel = new ClientesModel;
+		
 		
 		// echo "<pre>";
 		// $this->login=session('login');	
@@ -42,15 +44,21 @@ class Dashboard extends BaseController{
 		$totalProductos= $this->productoModel->totalProductos();
 		$stockMinProd = $this->productoModel->stockMinimoProductos();
 		$clientes = $this->clientesModel->inicioClientes();
+		$categorias = new CategoriasModel();
+		//$categorias = $categorias->findAll();
+		$activo='1';
+		 $categorias = $categorias->where('activo',$activo)->findAll();
+		//dd($categorias);
 	
 		$datos = [
 			'totalProductos' => $totalProductos,
 			'totalCompras' => $totalCompras,
 			'stockMinProd' => $stockMinProd,
 			'clientes'     => $clientes,
+			'categorias'     => $categorias,
 		];
-		echo view('MiHeader');
-		echo view('MiDashboard', $datos);
-		//echo view('MiFooter');
+		echo view('header_dashboard');
+		echo view('Dashboard', $datos);
+		echo view('footer_dashboard');
 	}
 }

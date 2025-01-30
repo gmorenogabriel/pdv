@@ -1,6 +1,6 @@
 <?php namespace App\Controllers;
 
-
+use App\Libraries\Custom;
 use App\Controllers\BaseController;
 use CodeIgniter\I18n\Time;
 use App\Models\FlujoCajaModel;
@@ -12,9 +12,7 @@ use App\Libraries\Toastr;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf; // Usa Mpdf como motor para PDF
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use FPDF;
+
 use setasign\Fpdi\Fpdi;
 
 class FlujoCaja extends BaseController{
@@ -103,6 +101,12 @@ class FlujoCaja extends BaseController{
             'fecha'  => $this->fecha_hoy,
         ];
 
+		// Prueba con Bootstrap y Datatables
+        // echo view('header_dashboard');
+		// echo view('flujocaja/flujocaja', $data);
+		// echo view('footer_dashboard');
+		
+		// Funcionamiento con Bootstrap 
         echo view('header');
 		echo view('flujocaja/flujocaja', $data);
 		echo view('footer');
@@ -234,12 +238,17 @@ class FlujoCaja extends BaseController{
                 echo view('footer');
         } 
     }
+    // ----------------------------------------------
+	// Genera Excel y Pdf
+	// ----------------------------------------------	
 	public function generaExcel(){
 	   try {
+			$nombreListado = 'Flujo de Caja';
+			$extension = 'xlsx';
             // Simulación de datos de entrada
 			$flujocaja = $this->flujocaja->findAll();
 			$data = [ 
-				'titulo' => 'Flujo de Caja',
+				'titulo' => $nombreListado,
 				'datos'  => $flujocaja,
 				'fecha'  => $this->fecha_hoy,
 			];
@@ -249,7 +258,7 @@ class FlujoCaja extends BaseController{
 			$sheet->setShowGridlines(false);
 
             // Agregar título y fecha en el cabezal
-			$tituloConFecha = 'Flujo de Caja al: ' . $data['fecha'];
+			$tituloConFecha = $nombreListado . ' al: ' . $data['fecha'];
 			$sheet->setCellValue('A1', $tituloConFecha);
 
             //$sheet->setCellValue('A1', $data['titulo']);
@@ -296,11 +305,34 @@ class FlujoCaja extends BaseController{
             $rowIndex = 3; // Comenzamos desde la fila 3
             foreach ($data['datos'] as $row) {
                 $sheet->setCellValue('A' . $rowIndex, $row['id']);
-                $sheet->setCellValue('B' . $rowIndex, $row['fecha']);
-                $sheet->setCellValue('C' . $rowIndex, $row['descripcion']);
-                $sheet->setCellValue('D' . $rowIndex, $row['entrada']);
-                $sheet->setCellValue('E' . $rowIndex, $row['salida']);
-                $sheet->setCellValue('F' . $rowIndex, $row['saldo']);
+				// Manejo para recorte de Fechas
+				$time = strtotime($row['fecha']);
+				$newformat = date('Y-m-d',$time);
+                $sheet->setCellValue('B' . $rowIndex, $newformat);
+                //$sheet->setCellValue('C' . $rowIndex, $row['descripcion']);
+				$descripcion = isset($row['descripcion']) ? $row['descripcion'] : '';
+				$descripcion = iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $descripcion);
+				if ($descripcion === false) {
+					$descripcion = '';
+				}
+				$descripcion = substr($descripcion, 0, 78);
+				$descripcion = trim($descripcion); // Reemplaza ltrim y rtrim por trim
+				$sheet->setCellValue('C' . $rowIndex, $descripcion);
+				
+				    // Formatear el valor numérico con puntos y comas
+				$entradaFormateado = number_format($row['entrada'], 2, ',', '.'); // Ejemplo: 1.234,56
+				$sheet->setCellValue('D' . $rowIndex, $entradaFormateado);
+
+				$salidaFormateado = number_format($row['salida'], 2, ',', '.'); // Ejemplo: 1.234,56
+				$sheet->setCellValue('E' . $rowIndex, $salidaFormateado);
+
+				$saldoFormateado = number_format($row['saldo'], 2, ',', '.'); // Ejemplo: 1.234,56
+				$sheet->setCellValue('F' . $rowIndex, $saldoFormateado);
+
+         /*        $sheet->setCellValue('D' . $rowIndex, $row['entrada']);
+					$sheet->setCellValue('E' . $rowIndex, $row['salida']);
+					$sheet->setCellValue('F' . $rowIndex, $row['saldo']); 
+		*/
                 $rowIndex++;
             }
 			// Descripcion seteada a la Izquierda
@@ -310,6 +342,14 @@ class FlujoCaja extends BaseController{
 
 			// Aplicar estilo a la columna C (Descripción)
 			$sheet->getStyle("C1:C{$lastRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+			$sheet->getStyle("D1:F{$lastRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+			
+			// Ampliamos el ancho de Columna a la fila con mayor largo
+			$columns = range('B', 'E'); // Ajusta las columnas desde 'C' hasta 'E'
+			foreach ($columns as $column) {
+				$sheet->getColumnDimension($column)->setAutoSize(true);
+			}
+
 			// Obtener la última fila con datos
 			$lastRow = $sheet->getHighestRow();
 
@@ -322,154 +362,148 @@ class FlujoCaja extends BaseController{
 					$sheet->setCellValue("C{$row}", $cleanValue);
 				}
 			}
+			// Ruta del directorio donde se guardarán los Excel
+			$directorio = WRITEPATH . 'excel/';
+				
+			// Generar un nombre de archivo único con fecha/hora
+			$timestamp = date('Ymd_His'); // Ejemplo: 20250129_154500
+			$nombreArchivo = WRITEPATH . "excel/" . $nombreListado . "_{$timestamp}." . $extension; // Ruta del archivo
 
-            // Guardar el archivo Excel en la carpeta writable
-			$filename = 'FlujoCaja_' . date('Ymd') . '.xlsx';			
-            $filePath = ROOTPATH . 'writable/' . $filename;
+			//$extension = substr(strrchr($nombreArchivo, '.'), 1);
+			
+			Custom::directorioExiste($directorio, $extension);
+			// Guardar el archivo Excel en la carpeta writable
             $writer = new Xlsx($spreadsheet);
-            $writer->save($filePath);
+            $writer->save($nombreArchivo);
+			
+			// Verificar si el archivo fue creado correctamente
+				if (!file_exists($nombreArchivo)) {
+					throw new \Exception('Error al generar el archivo Excel !!!');
+				}
 
-            // Confirmar que el archivo fue generado
-            return 'Archivo Excel generado exitosamente en: ' . $filePath;
-        } catch (\Exception $e) {
-            // Manejo de errores
-            return 'Error al generar el archivo Excel: ' . $e->getMessage();
-        }
-    }
-	
-	// Nueva Clase PDF
-
-public function generaPdf_no()
-{
-    // Simulación de datos de entrada
-    $flujocaja = $this->flujocaja->findAll();
-    $data = [ 
-        'titulo' => 'Flujo de Caja',
-        'datos'  => $flujocaja,
-        'fecha'  => $this->fecha_hoy,
-    ];
-
-    // Crear una instancia del PDF
-    //$pdf = new FPDF();
-	$pdf = new FPDF();
-    $pdf->AddPage("landscape");
-    
-    // Crear el archivo PDF y configuraciones para la descarga
-    $filename = 'FlujoCaja_' . date('Ymd') . '.pdf';
-    $filePath = FCPATH . 'writable/' . $filename;
-    
-    // Asegurarse de que no haya salida previa al PDF
-    ob_start(); // Inicia el buffer de salida para evitar que se envíen datos al navegador
-    
-    // Cabeceras de respuesta para el navegador
-	header('<!DOCTYPE html>');
-    header('Content-Type: application/pdf');
-    header('Content-Disposition: inline; filename="' . $filename . '"');
-    header('Content-Transfer-Encoding: binary');
-    header('Accept-Ranges: bytes');	
-
-
-    // Establecer título con fecha
-   // $tituloConFecha = 'Flujo de Caja al: ' . $data['fecha'];
-   // $pdf->SetFont('Arial', 'B', 14); // Usar Arial si no tienes Helvetica
-   // $pdf->SetTextColor(255, 255, 255);
-   // $pdf->SetFillColor(79, 129, 189); // Color de fondo azul
-   // $pdf->Cell(0, 10, $tituloConFecha, 0, 1, 'C', true);
-    $pdf->Cell(40, 10, 'Hola Mundo');
-    $pdf->Output($filepath, 'I'); // Muestra el PDF en línea
-	 ob_end_clean();  // Limpia el buffer de salida antes de generar el PDF
-	 exit;
-    // Espacio antes de los encabezados
-
-
-/*
-	$pdf->Ln(10);
-    // Agregar encabezados de columna
-    $headers = ['ID', 'Fecha', 'Descripción', 'Entrada', 'Salida', 'Saldo'];
-    $pdf->SetFont('Arial', 'B', 12); // Usar Arial
-    $pdf->SetFillColor(12, 183, 242); // Color celeste
-    $pdf->Cell(30, 10, $headers[0], 1, 0, 'C', true);
-    $pdf->Cell(30, 10, $headers[1], 1, 0, 'C', true);
-    $pdf->Cell(50, 10, $headers[2], 1, 0, 'L', true);
-    $pdf->Cell(30, 10, $headers[3], 1, 0, 'R', true);
-    $pdf->Cell(30, 10, $headers[4], 1, 0, 'R', true);
-    $pdf->Cell(30, 10, $headers[5], 1, 1, 'R', true);
-
-    // Rellenar los datos
-    $pdf->SetFont('Arial', '', 12); // Usar Arial
-    foreach ($data['datos'] as $row) {
-	    //var_dump($row['id'] . ' - ' . $row['descripcion'] );
-        $pdf->Cell(30, 10, $row['id'] , 1, 0, 'C');
-        $pdf->Cell(30, 10, $row['fecha'] , 1, 0, 'C');
-        $pdf->Cell(50, 10, $row['descripcion'] , 1, 0, 'L'); // "L"-left Descripción alineada a la izquierda
-        $pdf->Cell(30, 10, $row['entrada'] , 1, 0, 'R');
-        $pdf->Cell(30, 10, $row['salida'] , 1, 0, 'R');
-        $pdf->Cell(30, 10, $row['saldo'] , 1, 1, 'R');
-    }
-
-    // Generar el PDF en el navegador (mostrar en línea)
-    $pdf->Output('F', $filename);  // 'I' muestra el PDF en el navegador
-
-    ob_end_clean();  // Limpia el buffer de salida antes de generar el PDF
-	exit;
-*/
-}
-	public function generaPdf()
-	{
-		// Simulación de datos de entrada
-		$flujocaja = $this->flujocaja->findAll();
-		$data = [ 
-			'titulo' => 'Flujo de Caja',
-			'datos'  => $flujocaja,
-			'fecha'  => $this->fecha_hoy,
-			];
-   // Crear una instancia de FPDI
-        $pdf = new Fpdi();
-
-        // Agregar una página
-        $pdf->AddPage("landscape");
-
-        // Configurar la fuente
-        $pdf->SetFont('Arial', 'B', 16);
-
- // Agregar encabezados de columna
-    $headers = ['ID', 'Fecha', 'Descripción', 'Entrada', 'Salida', 'Saldo'];
-    $pdf->SetFont('Arial', 'B', 12); // Usar Arial
-    $pdf->SetFillColor(12, 183, 242); // Color celeste
-    $pdf->Cell(07, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $headers[0]), 1, 0, 'C', true);
-	//$pdf->Cell(07, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Texto con tildes: á, é, í, ó, ú y ñ.'), 1, 0, 'C', true);
-    $pdf->Cell(30, 10, $headers[1], 1, 0, 'C', true);
-    $pdf->Cell(80, 10,iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $headers[2]), 1, 0, 'L', true);
-    $pdf->Cell(30, 10, $headers[3], 1, 0, 'R', true);
-    $pdf->Cell(30, 10, $headers[4], 1, 0, 'R', true);
-    $pdf->Cell(30, 10, $headers[5], 1, 1, 'R', true);
-	
-    // Rellenar los datos
-    $pdf->SetFont('Arial', '', 12); // Usar Arial
-    foreach ($data['datos'] as $row) {
-	    //var_dump($row['id'] . ' - ' . $row['descripcion'] );
-        $pdf->Cell(7, 10, $row['id'] , 1, 0, 'C');
-		$time = strtotime($row['fecha']);
-		$newformat = date('Y-m-d',$time);
-        $pdf->Cell(30, 10, $newformat, 1, 0, 'C');
-        $pdf->Cell(80, 10, ltrim(rtrim(substr(iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $row['descripcion']),0,78))) , 1, 0, 'L'); // "L"-left Descripción alineada a la izquierda
-        $pdf->Cell(30, 10, $row['entrada'] , 1, 0, 'R');
-        $pdf->Cell(30, 10, $row['salida'] , 1, 0, 'R');
-        $pdf->Cell(30, 10, $row['saldo'] , 1, 1, 'R');
-    }
-        // Agregar un espacio
-        $pdf->Ln(10);
-
-        // Establecer el título del documento
-        $pdf->SetFont('Arial', '', 12);
-     //   $pdf->Cell(0, 10, mb_convert_encoding('Este es un ejemplo de cómo usar FPDI en CodeIgniter 4.', 'ISO-8859-1', 'UTF-8'), 0, 1);
-
-        // Salida del archivo PDF al navegador
-        return $this->response
-            ->setContentType('application/pdf')
-            ->setBody($pdf->Output('S')); // La opción 'S' envía el contenido como cadena		
-		
+				return $this->response->setJSON([
+					'status' => 'success',
+					'message' => 'El archivo Excel se generó correctamente.',
+					//'downloadUrl' => base_url($nombreArchivo),
+					'downloadUrl' => $nombreArchivo,
+				]);
+			} catch (\Exception $e) {
+				// Devolver un error controlado
+				return $this->response->setJSON([
+					'status' => 'error',
+					'message' => $e->getMessage(),
+				]);
+		}
 	}
 	
+	public function generaPdf()
+	{
+		try{
+			$nombreListado = 'Flujo Caja';
+			$extension = 'pdf';
+			$tituloFecha   = $nombreListado . ' al ' . $this->fecha_hoy;
+			// Simulación de datos de entrada
+			$todos = $this->flujocaja->findAll();
+			$data = [ 
+				'titulo' => 'Flujo de Caja',
+				'tituloFecha' => $tituloFecha,			
+				'datos'  => $todos,
+				'fecha'  => $this->fecha_hoy,
+				];
+	   // Crear una instancia de FPDI
+			$pdf = new Fpdi();
+
+			// Agregar una página
+			$pdf->AddPage("landscape");
+
+		// Agregar título al PDF
+			$pdf->SetFont('Arial', 'B', 16); // Fuente Arial, Negrita, Tamaño 16
+			$pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $data['tituloFecha']), 0, 1, 'C'); // Texto centrado
+			$pdf->Ln(5); // Agregar espacio después del título
+
+			// Configurar la fuente
+			$pdf->SetFont('Arial', 'B', 16);
+
+		 // Agregar encabezados de columna
+			$headers = ['ID', 'Fecha', 'Descripción', 'Entrada', 'Salida', 'Saldo'];
+			$pdf->SetFont('Arial', 'B', 12); // Usar Arial
+			$pdf->SetFillColor(12, 183, 242); // Color celeste
+			$pdf->Cell(07, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $headers[0]), 1, 0, 'C', true);
+			//$pdf->Cell(07, 10, iconv('UTF-8', 'ISO-8859-1//TRANSLIT', 'Texto con tildes: á, é, í, ó, ú y ñ.'), 1, 0, 'C', true);
+			$pdf->Cell(30, 10, $headers[1], 1, 0, 'C', true);
+
+			// Controlamos que venga el campo con datos para que no falle "iconv"
+			$descripcion = isset($row['descripcion']) ? $row['descripcion'] : '';
+			$descripcion = iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $descripcion);
+			if ($descripcion === false) {
+				$descripcion = '';
+			}
+			$descripcion = substr($descripcion, 0, 49);
+			$descripcion = trim($descripcion); // Reemplaza ltrim y rtrim por trim
+			$pdf->Cell(80, 10, $descripcion, 1, 0, 'L', true);
+			$pdf->Cell(30, 10, $headers[3], 1, 0, 'R', true);
+			$pdf->Cell(30, 10, $headers[4], 1, 0, 'R', true);
+			$pdf->Cell(30, 10, $headers[5], 1, 1, 'R', true);
+			
+			// Rellenar los datos
+			$pdf->SetFont('Arial', '', 12); // Usar Arial
+			foreach ($data['datos'] as $row) {
+				$pdf->Cell(7, 10, $row['id'] , 1, 0, 'C');
+				$time = strtotime($row['fecha']);
+				$newformat = date('Y-m-d',$time);
+				$pdf->Cell(30, 10, $newformat, 1, 0, 'C');
+				$pdf->Cell(80, 10, ltrim(rtrim(substr(iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $row['descripcion']),0,78))) , 1, 0, 'L'); // "L"-left Descripción alineada a la izquierda
+				$pdf->Cell(30, 10, $row['entrada'] , 1, 0, 'R');
+				$pdf->Cell(30, 10, $row['salida'] , 1, 0, 'R');
+				$pdf->Cell(30, 10, $row['saldo'] , 1, 1, 'R');
+			}
+			// Agregar un espacio
+			$pdf->Ln(10);
+
+			// Si se genero OK avisamos
+			// Ruta del directorio donde se guardarán los Excel
+			$directorio = WRITEPATH . 'pdf/';
+
+			// Verificar si el directorio existe; si no, crearlo
+			Custom::directorioExiste($directorio, $extension);
+			// Generar un nombre de archivo único con fecha/hora
+			$timestamp = date('Ymd_His'); // Ejemplo: 20250129_154500
+			$nombreArchivo = WRITEPATH . "pdf/" . $nombreListado . "_{$timestamp}." . $extension; // Ruta del archivo
+
+
+			// Guardar el archivo Excel en la carpeta writable
+			//   $writer = new Xlsx($spreadsheet);
+			//   $writer->save($nombreArchivo);
+				// Salida del archivo PDF al navegador
+				//return $this->response
+				/*
+				return	$this->response
+					->setContentType('application/pdf')
+					->setBody($pdf->Output('S')); // La opción 'S' envía el contenido como cadena
+				*/
+				// Guardar el archivo PDF en el servidor
+				$pdf->Output($nombreArchivo, 'F'); // Guardar en el servidor
+		
+				// Verificar si el archivo fue creado correctamente
+				if (!file_exists($nombreArchivo)) {
+					throw new \Exception('Error al generar el archivo Pdf.');
+				}
+
+				return $this->response->setJSON([
+					'status' => 'success',
+					'message' => 'El archivo Pdf se generó correctamente.',
+					//'downloadUrl' => base_url($nombreArchivo),
+					'downloadUrl' => $nombreArchivo,
+				]);
+			} catch (\Exception $e) {
+				// Devolver un error controlado
+			//	echo "<script>console.log($e->getMessage());</script>";
+			//	echo "<script>alert('Exception ' . $e->getMessage());</script>";
+				return $this->response->setJSON([
+					'status' => 'error',
+					'message' => $e->getMessage(),
+				]);
+		}
+	}	
 	// Fin Clase
 }

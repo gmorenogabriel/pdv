@@ -11,7 +11,7 @@ class CategoriasModel extends Model{
     protected $returnType     = 'array';
     protected $useSoftDeletes = false;
 
-    protected $allowedFields = ['nombre', 'activo'];
+    protected $allowedFields = ['id','nombre', 'activo'];
 
     protected $useTimestamps = true;
     protected $createdField  = 'fecha_alta';
