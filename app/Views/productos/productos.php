@@ -5,9 +5,9 @@
         <hr color="cyan"></hr>
             <div>
                 <p>
-                    <a href="<?php echo base_url(); ?>/productos/nuevo" class="btn btn-primary">Agregar</a>
-                    <a href="<?php echo base_url(); ?>/productos/eliminados" class="btn btn-warning">Eliminados</a>
-                    <a href="<?php echo base_url(); ?>/productos/generaBarras" class="btn btn-info">Cód.Barras</a>
+                    <a href="<?php echo base_url(); ?>productos/nuevo" class="btn btn-primary">Agregar</a>
+                    <a href="<?php echo base_url(); ?>productos/eliminados" class="btn btn-warning">Eliminados</a>
+                    <a href="<?php echo base_url(); ?>productos/generaBarras" class="btn btn-info">Cód.Barras</a>
                 </p>
             </div>
 
@@ -56,12 +56,12 @@
                             <?php } else { ?>
                                 <td align=center> <?php echo $dato['existencias']; ?>&nbsp;&nbsp;</td>                                 
                             <?php } ?>
-                           <td><img src="<?php echo base_url() . '/images/productos/'.$dato['id'].'/foto_1.jpg'; ?>" width="50" /></td>
-                           <!--  <td><?php echo base_url() . '/images/productos/'.$dato['id'].'/foto_1.jpg'; ?>"/></td> -->
+                           <td><img src="<?php echo base_url() . 'images/productos/'.$dato['id'].'/foto_1.jpg'; ?>" width="50" /></td>
+                           <!--  <td><?php echo base_url() . 'images/productos/'.$dato['id'].'/foto_1.jpg'; ?>"/></td> -->
                                 
-                            <td><a href="<?php echo base_url() . '/productos/editar/' . $dato['id']; ?>;" class="btn btn-success">
+                            <td><a href="<?php echo base_url() . 'productos/editar/' . $dato['id']; ?>;" class="btn btn-success">
                             <i class="fas fa-pencil-alt fas-lg"></i></a>
-                            <a href="#" data-href="<?php echo base_url() . '/productos/eliminar/' . $dato['id']; ?>;" 
+                            <a href="#" data-href="<?php echo base_url() . 'productos/eliminar/' . $dato['id']; ?>;" 
                                     data-toggle="modal" data-target="#modal-confirma" data-placement="top" 
                                     title="Eliminar registro" class="btn btn-danger">
                             <i class="fas fa-trash"></i></a></td>

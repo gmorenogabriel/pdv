@@ -3,6 +3,8 @@
 namespace Config;
 
 use CodeIgniter\Config\BaseService;
+use Hashids\Hashids; // Importa la biblioteca Hashids
+
 
 /**
  * Services Configuration file.
@@ -29,4 +31,12 @@ class Services extends BaseService
      *     return new \CodeIgniter\Example();
      * }
      */
+	   public static function hashids($getShared = true)
+    {
+        if ($getShared) {
+            return static::getSharedInstance('hashids');
+        }
+        // Configura la biblioteca Hashids
+        return new Hashids('ElDiaQueMeQuieras', 10);
+    }
 }

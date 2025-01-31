@@ -5,8 +5,8 @@
         <hr color="cyan"></hr>
           <div>
             <p>
-                <a href="<?php echo base_url(); ?>/usuarios/nuevo" class="btn btn-primary">Agregar</a>
-                <a href="<?php echo base_url(); ?>/usuarios/eliminados" class="btn btn-warning">Eliminados</a>
+                <a href="<?php echo base_url(); ?>usuarios/nuevo" class="btn btn-primary"> Agregar</a>
+                <a href="<?php echo base_url(); ?>usuarios/eliminados" class="btn btn-warning"> Eliminados</a>
             </p>
             </div>
                 <div class="table-responsive">
@@ -30,9 +30,9 @@
                                 <td align=left>&nbsp;<?php echo $dato['nombre']; ?></td>
                                 <td align=center>&nbsp;<?php echo $dato['id_caja']; ?></td>
                                 <td align=center>&nbsp;<?php echo $dato['id_rol']; ?></td>
-                                <td><a href="<?php echo base_url() . '/usuarios/editar/' . $dato['id']; ?>;" class="btn btn-success">
+                                <td><a href="<?php echo base_url() . 'usuarios/editar/' . $dato['id']; ?>;" class="btn btn-success">
                                 <i class="fas fa-pencil-alt"></i></a>
-                                <a href="#" data-href="<?php echo base_url() . '/usuarios/eliminar/' . $dato['id']; ?>;" 
+                                <a href="#" data-href="<?php echo base_url() . 'usuarios/editar/' . $dato['id']; ?>;" 
                                        data-toggle="modal" data-target="#modal-confirma" data-placement="top" 
                                        title="Eliminar registro" class="btn btn-danger">
                                 <i class="fas fa-trash"></i></a></td>

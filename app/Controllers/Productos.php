@@ -1,6 +1,7 @@
 <?php 
 namespace App\Controllers;
 use CodeIgniter\Images\Exceptions\ImageException;
+
 include APPPATH . 'Libraries/CodeItNow/BarcodeBundle/Utils/QrCode.php';
  include APPPATH . 'Libraries/CodeItNow/BarcodeBundle/Utils/BarcodeType.php';
  include APPPATH . 'Libraries/CodeItNow/BarcodeBundle/Utils/BarcodeGenerator.php';
@@ -94,6 +95,7 @@ class Productos extends BaseController{
         if($this->session->has('id_usuario') === false) { 
             return redirect()->to(base_url()); 
         }
+		
         $productos = $this->productos->where('activo',$activo)->findAll();
         $data = [ 
             'titulo' => 'Productos',

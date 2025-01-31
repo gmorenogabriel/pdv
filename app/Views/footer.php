@@ -19,6 +19,7 @@
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script src="<?php echo base_url(); ?>font-awesome/js/all.js" crossorigin="anonymous"></script>
 <script src="<?php echo base_url(); ?>js/sweetalert2.all.min.js" crossorigin="anonymous"></script>
+<script src="<?php echo base_url(); ?>js/mis-js/genera_excel_pdf.js"></script>
 <!-- <script src="<?php echo base_url(); ?>js/Chart.js"></script> -->
 <script>
     $(document).ready(function() {
@@ -35,9 +36,14 @@
                     url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" // Traducción al español
                 }
             });
+/* Este codigo paso a public/js/mis-js/genera_excel_pdf.js
+	    despues de realizar las pruebas necesarias quitar
+		de footer.php 
+		para que quede ordenado
+
 function generarArchivo(titulo, mensaje, url, botonDescarga = "Descargar archivo") {
     // Mostrar alerta mientras se procesa
-//	console.log(`Titulo: ${titulo},  Mensaje: ${mensaje}, URL: ${url}`);
+	//	console.log(`Titulo: ${titulo},  Mensaje: ${mensaje}, URL: 0${url}`);
     Swal.fire({
         title: titulo,
         text: mensaje,
@@ -86,7 +92,7 @@ function generarArchivo(titulo, mensaje, url, botonDescarga = "Descargar archivo
 //
 // Para todas los programas hay que cambiar el Boton de Generacion
 //
-/* Categorias */
+/* Categorias 
 $('#btnGeneraExcelCateg').on('click', function (e) {
 	//Version Dinamica donde paso parametros
     e.preventDefault();
@@ -109,7 +115,7 @@ $('#btnGeneraPdfCateg').on('click', function (e) {
         'Descargar Pdf' // Texto del botón de descarga
     );
 });
-/* Flujo Caja */
+/* Flujo Caja 
 $('#btnGeneraExcelFlujo').on('click', function (e) {
 	//Version Dinamica donde paso parametros
     e.preventDefault();
@@ -129,6 +135,29 @@ $('#btnGeneraPdfFlujo').on('click', function (e) {
         'Generando Pdf...', // Título de la alerta
         'Por favor, espera mientras se genera el archivo.', // Mensaje de la alerta
         'flujocaja/generaPdf', // URL donde se realiza la solicitud
+        'Descargar Pdf' // Texto del botón de descarga
+    );
+});
+/* Unidades 
+$('#btnGeneraExcelUnidades').on('click', function (e) {
+	//Version Dinamica donde paso parametros
+    e.preventDefault();
+    generarArchivo(
+        'Generando Excel...', // Título de la alerta
+        'Por favor, espera mientras se genera el archivo.', // Mensaje de la alerta
+        'unidades/generaExcel', // URL donde se realiza la solicitud
+        'Descargar Excel' // Texto del botón de descarga
+    );
+});
+
+$('#btnGeneraPdfUnidades').on('click', function (e) {
+	//Version Dinamica donde paso parametros
+    e.preventDefault();
+	console.log('btnGeneraPdfUnidades');
+    generarArchivo(
+        'Generando Pdf...', // Título de la alerta
+        'Por favor, espera mientras se genera el archivo.', // Mensaje de la alerta
+        'unidades/generaPdf', // URL donde se realiza la solicitud
         'Descargar Pdf' // Texto del botón de descarga
     );
 });
@@ -183,7 +212,7 @@ $('#btnGeneraExcelCategVIEJO').on('click', function (e) {
         },
     });
 });
-
+*/
 	document.addEventListener("DOMContentLoaded", function () {
 		console.log(document.getElementById('myBarChart'));
 		console.log(document.getElementById('myPieChart'));

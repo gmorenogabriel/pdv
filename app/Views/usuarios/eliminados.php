@@ -4,7 +4,7 @@
         <h1 class="mt-4"><?php echo $titulo; ?></h1>
             <div>
                 <p>
-                    <a href="<?php echo base_url(); ?>/unidades" class="btn btn-warning">Unidades</a>
+                    <a href="<?php echo base_url(); ?>usuarios" class="btn btn-warning"> Usuarios</a>
                 </p>
 
             </div>
@@ -26,7 +26,7 @@
                                 <td><?php echo $dato['id']; ?></td>
                                 <td><?php echo $dato['nombre']; ?></td>
                                 <td><?php echo $dato['nombre_corto']; ?></td>
-                                <td><a href="#" data-href="<?php echo base_url() . '/unidades/reingresar/' . $dato['id']; ?>;" 
+                                <td><a href="#" data-href="<?php echo base_url() . 'usuarios/reingresar/' . $dato['id']; ?>;" 
                                        data-toggle="modal" data-target="#modal-confirma" data-placement="top" 
                                        title="Reingresar registro"><i class="fa fa-3x fa-arrow-alt-circle-up"></i></a></td>
                             </tr>

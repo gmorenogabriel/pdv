@@ -8,7 +8,7 @@
                     <div>
                         <a href="<?php echo base_url(); ?>flujocaja/entradas" class="btn btn-primary"> Ingresos</a>
                         <a href="<?php echo base_url(); ?>flujocaja/salidas" class="btn btn-danger"> Egresos</a>
-                    </div>
+                    </div>					
                     <div>
 						<button id="btnGeneraExcelFlujo" type="button" class="btn btn-success" data-dismiss="modal"><i class="fas fa-file-excel"></i> Excel</a></button>			
 						<button id="btnGeneraPdfFlujo"   type="button" class="btn btn-success" data-dismiss="modal"><i class="fas fa-file-pdf"></i> Pdf</a></button>

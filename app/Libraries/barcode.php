@@ -1,4 +1,4 @@
-<?php
+<?php namespace App\Libraries;
 
 /*
  *  Author	David S. Tufts

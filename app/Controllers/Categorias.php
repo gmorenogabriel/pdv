@@ -2,14 +2,12 @@
 
 use App\Libraries\Custom;
 use App\Controllers\BaseController;
-use App\Models\CategoriasModel;
 use CodeIgniter\I18n\Time;
 use App\Libraries\Toastr;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-
 use setasign\Fpdi\Fpdi;
-
+use App\Models\CategoriasModel;
 
 class Categorias extends BaseController
 {
@@ -38,7 +36,7 @@ class Categorias extends BaseController
 		
 		 // Obtenemos la Fecha del Sistema
 		$myTime = Time::now('America/Montevideo', 'la_UY');
-        $today       = Time::createFromDate();            // Uses current year, month, and day
+        $today  = Time::createFromDate();            // Uses current year, month, and day
 		$this->fecha_hoy  = $today->toLocalizedString('dd/MM/yyyy');   // March 9, 2016
         
         helper(['form','url','number']);        
@@ -334,7 +332,7 @@ class Categorias extends BaseController
 				
 			// Generar un nombre de archivo único con fecha/hora
 			$timestamp = date('Ymd_His'); // Ejemplo: 20250129_154500
-			$nombreArchivo = WRITEPATH . "excel/categorias_{$timestamp}." . $extension; // Ruta del archivo
+			$nombreArchivo = WRITEPATH . "excel/" . $nombreListado . "_{$timestamp}." . $extension; // Ruta del archivo			
 
 			//$extension = substr(strrchr($nombreArchivo, '.'), 1);
 			
@@ -416,7 +414,7 @@ class Categorias extends BaseController
 			Custom::directorioExiste($directorio, $extension);
 			// Generar un nombre de archivo único con fecha/hora
 			$timestamp = date('Ymd_His'); // Ejemplo: 20250129_154500
-			$nombreArchivo = WRITEPATH . "pdf/categorias_{$timestamp}.pdf"; // Ruta del archivo
+			$nombreArchivo = WRITEPATH . "pdf/" . $nombreListado . "_{$timestamp}." . $extension; // Ruta del archivo
 
 
 			// Guardar el archivo Excel en la carpeta writable

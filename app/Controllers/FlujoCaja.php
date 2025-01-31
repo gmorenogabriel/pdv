@@ -281,9 +281,11 @@ class FlujoCaja extends BaseController{
             $sheet->mergeCells('A1:F1'); // Combinar celdas para el título
             $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
             $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
-			$sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
 			
+			// --------------------------------------
             // Agregar encabezados para las columnas
+			// --------------------------------------- 
+
             $headers = ['ID', 'Fecha', 'Descripción', 'Entrada', 'Salida', 'Saldo'];
             $columnIndex = 'A';
             foreach ($headers as $header) {
@@ -354,14 +356,14 @@ class FlujoCaja extends BaseController{
 			$lastRow = $sheet->getHighestRow();
 
 			// Recorrer la columna 'C' y eliminar espacios en blanco
-			for ($row = 1; $row <= $lastRow; $row++) {
-				$cellValue = $sheet->getCell("C{$row}")->getValue();
-				if (!is_null($cellValue)) {
-					// Eliminar espacios en blanco
-					$cleanValue = str_replace(' ', '', $cellValue); // Quita todos los espacios en blanco
-					$sheet->setCellValue("C{$row}", $cleanValue);
-				}
-			}
+			// for ($row = 1; $row <= $lastRow; $row++) {
+				// $cellValue = $sheet->getCell("C{$row}")->getValue();
+				// if (!is_null($cellValue)) {
+					//Eliminar espacios en blanco
+					// $cleanValue = str_replace(' ', '', $cellValue); // Quita todos los espacios en blanco
+					// $sheet->setCellValue("C{$row}", $cleanValue);
+				// }
+			// }
 			// Ruta del directorio donde se guardarán los Excel
 			$directorio = WRITEPATH . 'excel/';
 				
