@@ -14,13 +14,24 @@
             </div>
         </div>
 <!-- Al final de tu archivo footer.php -->
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script src="<?php echo base_url(); ?>font-awesome/js/all.js" crossorigin="anonymous"></script>
-<script src="<?php echo base_url(); ?>js/sweetalert2.all.min.js" crossorigin="anonymous"></script>
-<script src="<?php echo base_url(); ?>js/mis-js/genera_excel_pdf.js"></script>
+
 <!-- <script src="<?php echo base_url(); ?>js/Chart.js"></script> -->
+ <!-- JS de Bootstrap y jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+	<!-- SB Admin 2 JS -->
+	<script src="<?php echo base_url(); ?>js/sb-admin-2.min.js"></script>
+    <!-- JS personalizado -->
+    <script src="<?php echo base_url(); ?>js/mis-js/genera_excel_pdf.js"></script>
+<script src="<?php echo base_url(); ?>font-awesome/js/all.js" crossorigin="anonymous"></script>
+<!-- <script src="<?php echo base_url(); ?>js/sweetalert2.all.min.js" crossorigin="anonymous"></script> -->
+<script src="<?php echo base_url(); ?>js/mis-js/genera_excel_pdf.js"></script>
+
+
 <script>
     $(document).ready(function() {
 		console.log ("Ejecutando en el Documento");

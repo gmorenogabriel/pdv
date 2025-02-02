@@ -24,8 +24,10 @@ $routes->setAutoRoute(false);
  * @var RouteCollection $routes
  *
  *  Ruta principal que viene por defecto
-   $routes->get('/', 'Home::index');
+   $routes->get('/', 'Home::index')
  */
+ // Define la ruta por defecto para redirigir a Usuarios::login
+$routes->get('/', 'Usuarios::login');
 
 $routes->group('/',['namespace' => 'App\Controllers'],function($routes){
         $routes->get('login',            				'Usuarios::login',    			['as' => 'usuarios']);   // Web de Ingreso http://localhost:8084/pdv/public/login
@@ -46,7 +48,7 @@ $routes->group('/',['namespace' => 'App\Controllers'],function($routes){
 		$routes->get('unidades',         				'Unidades::index',   			['as' => 'unidades']);
 		$routes->get('unidades/nuevo',    				'Unidades::nuevo',     			['as' => 'unidadesnuevo']);			
 		$routes->get('unidades/editar/(:any)',			'Unidades::editar/$1',			['as' => 'unidadesedit']);			
-		$routes->get('unidades/actualizar/(:any)',		'Unidades::actualizar/$1',		['as' => 'unidadesactual']);
+		$routes->post('unidades/actualizar/(:any)',		'Unidades::actualizar/$1',		['as' => 'unidadesactual']);
 		$routes->get('unidades/encode/(:num)', 			'Unidades::encodeData/$1');
 		$routes->get('unidades/decode/(:any)', 			'Unidades::decodeData/$1');
 		$routes->get('unidades/generaExcel',			'Unidades::generaExcel',   		['as' => 'unidadesexcel']);
@@ -91,8 +93,8 @@ $routes->group('/',['namespace' => 'App\Controllers'],function($routes){
 /*      --------- */					
         $routes->get('envioemail',       				'EnvioEMail::index',   			['as' => 'envioemail']);	
 /*      --------- */				
-		$routes->get('encode/(:num)', 	 				'Unidades::encodeData/$1');
-		$routes->get('decode/(:any)', 	 				'Unidades::decodeData/$1');
+		$routes->get('encode/(:num)', 	 				'Encripcion::encodeData/$1',	['as' => 'encriptoid']);
+		$routes->get('decode/(:any)', 	 				'Encripcion::decodeData/$1',	['as' => 'desencriptoid']);	
 
 		$routes->post('datatables/totalHombres',		'Datatables::totalHombres',     ['as' => 'totalhombres']);
 		$routes->post('datatables/totalMujeres',		'Datatables::totalMujeres',     ['as' => 'totalmujeres']);		

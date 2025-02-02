@@ -21,7 +21,10 @@ class Unidades extends BaseController
     //protected $empresa;
 	protected $hashids;
 	protected $miClaveSecreta;
-	 
+	
+	/* ------------------------------------------------ */
+	/* Funcion __construct()                            */
+	/* ------------------------------------------------ */	
     public function __construct()
     {
         helper(['form']);
@@ -48,9 +51,10 @@ class Unidades extends BaseController
         $this->clase = $controlador[max(array_keys($controlador))] ;
   
         // Configura la biblioteca Hashids con una clave secreta
-		$this->miClaveSecreta = env('encryption.key');
-        $this->hashids = new Hashids($this->miClaveSecreta, 10);
+		//$this->miClaveSecreta = env('encryption.key');
+        // $this->hashids = new Hashids($this->miClaveSecreta, 10);
 		
+		$activo = '1';
         // Variables para nuestras reglas de validac.del Form
         $this->reglas = [
             'nombre' =>  [
@@ -68,21 +72,9 @@ class Unidades extends BaseController
             ];
     }
 
-	public function encodeData($id)
-    {
-        $hashids = Services::hashids();
-        $encoded = $hashids->encode($id);
-        echo "Encoded ID: " . $encoded;
-    }
-
-    public function decodeData($encoded)
-    {
-        $hashids = Services::hashids();
-        $encoded = $this->miClaveSecreta; //'Z7B8cXJ4';
-        $decoded = $hashids->decode($encoded);
-        echo "Decoded ID: " . (isset($decoded[0]) ? $decoded[0] : 'Invalid');
-    }
-
+	/* ------------------------------------------------ */
+	/* Funcion index($activo = 0)                       */
+	/* ------------------------------------------------ */	
     public function index($activo = 1){
         // Si no está Logueado lo manda a IDENTIFICARSE
         if($this->session->has('id_usuario') === false) { 
@@ -91,19 +83,47 @@ class Unidades extends BaseController
         $locale = $this->request->getLocale();  
         //echo $locale;
         //echo lang('Translate.form_validation_required');
-        $unidades = $this->unidades->where('activo',$activo)->findAll();
+		
+		
+        $unArray = $this->unidades->where('activo',$activo)->findAll();
+		// Instanciamos el Servicio
+		$hashids = Services::hashids();
+		// Generar el ID encriptado para cada registro
+		foreach ($unArray as &$dato) {		
+			$dato['id_encriptado'] = $hashids->encode($dato['id']);
+		}
+		// ------------------------------------------------------------------
+		// IMPORTANTE: Romper la referencia después del bucle
+		unset($dato); 
+		// SOLO SI NECESITO COMPROBAR "print_r($unidades);"
+		// ------------------------------------------------------------------		
         $s2Icono  = null;
+	    $msgToast = [
+            's2Titulo' => $this->clase, 
+            's2Texto' => 'Listado de Unidades',
+            's2Icono' => 'info',
+            's2ConfirmButtonText' => true, // <!-- $s2ConfirmButtonText, -->
+            's2ShowConfirmButton' => true, // <!-- $s2ShowConfirmButton, -->            
+            's2Toast' => true,             // <!-- $s2Toast, -->
+            's2Footer' => 'PIE Mensaje',   // <!-- $s2Footer, -->
+        ];
         $data = [ 
             'titulo'  => $this->clase,
-            'datos'   => $unidades,
+            'datos'   => $unArray,
             's2Icono' => $s2Icono,
 			'fecha'  => $this->fecha_hoy,
         ];
+	
 		echo view('header');
+		echo view('sweetalert2', $msgToast);    
 		echo view('unidades/unidades', $data);
 		echo view('footer');
 		//echo view('dashboard');
     }
+
+	/* ------------------------------------------------ */
+	/* Funcion eliminados($activo = 0)                  */
+	/* ------------------------------------------------ */	
     public function eliminados($activo = 0)
     {
         $unidades = $this->unidades->where('activo',$activo)->findAll();
@@ -116,7 +136,11 @@ class Unidades extends BaseController
 		echo view('footer');
 		//echo view('dashboard');
 	}
-    public function nuevo(){
+	
+	/* ------------------------------------------------ */
+	/* Funcion nuevo()                                  */
+	/* ------------------------------------------------ */	
+	public function nuevo(){
         $data = [ 
             'titulo' => 'Agregar '.$this->clase,
             'validation' => null,
@@ -126,6 +150,9 @@ class Unidades extends BaseController
 		echo view($this->clase.'/nuevo', $data);
 		echo view('footer');
     }
+	/* ------------------------------------------------ */
+	/* Funcion insertar()                               */
+	/* ------------------------------------------------ */	
     public function insertar(){
         if($this->request->getMethod() == "post" && $this->validate($this->reglas)){
             // ------------------------------------------
@@ -215,98 +242,139 @@ class Unidades extends BaseController
             echo view('footer');
         }        
     }
-    public function editar($id, $valid=null){
-		d($id);
-		$hash = new Hashids();
-        $id_user = $hash->decode($id);
-        d($id_user);
+	
+	/* ------------------------------------------------ */
+	/* Funcion editar($id)                              */
+	/* ------------------------------------------------ */	
+    public function editar($id){
+	//, $valid=null){
+
+		try {
 		if ( null !== $id) {
 			// Controlamos recibir cargado el id Encriptado
-            // por si editaron la URL 
-   		try {
-            $id_desenc = base64_decode($id);
-            $unidad = $this->unidades->where('id',$id_desenc)->first();
-            
-            if($valid != null){
-                $data = [ 
-                    'titulo' => 'Editar '.$this->clase,
-                    'datos'  => $unidad,
-                    'validation' => $valid
-                ];
-            }else{
-                $data = [ 
-                    'titulo' => 'Editar '.$this->clase, 
-                    'datos'  => $unidad,
-                    'id_enc' => $id_desenc,
-                ];
-            }
+			// Instanciamos el Servicio
+			$hashids = Services::hashids();
+			$id_desenc = $hashids->decode($id);
+			$unArray = $this->unidades->where('id',$id_desenc)->first();
+
+			$data = [ 
+                 'titulo' => 'Editar '.$this->clase, 
+                 'datos'  => $unArray,
+                 'id_enc' => $id,
+			];
+			// if($valid != null){
+                // $data = [ 
+                    // 'titulo' => 'Editar '.$this->clase,
+                    // 'datos'  => $unArray,
+                    // 'validation' => $valid
+                // ];
+            // }else{
+                // $data = [ 
+                    // 'titulo' => 'Editar '.$this->clase, 
+                    // 'datos'  => $unArray,
+                    // 'id_enc' => $id_desenc,
+                // ];
+            // }
             echo view('header');
             echo view('unidades/editar', $data);
             echo view('footer');
-            } catch (\Exception $e){
-                die($e->getMessage());
-            }          
-        }  else {
-             echo "Error al tratar de acceder " . $this->clase;
+		    }  else {
+				echo "Error al tratar de acceder " . $this->clase;
+			}
+		} catch (\Exception $e) {
+                return ($e->getMessage());
         }          
+          
     }
+	/* ------------------------------------------------ */
+	/* Funcion actualizar($id)                          */
+	/* ------------------------------------------------ */	
     public function actualizar(){
-        if($this->request->getMethod() == "post" && $this->validate($this->reglas)){
+      //  if($this->request->getMethod() == "post" && $this->validate($this->reglas)){
             try {
+			    $activo = 1;
+				$id = $this->request->getPost('id');   
+				if ( null !== $id) {
+					// Controlamos recibir cargado el id Encriptado
+					// Instanciamos el Servicio
+					$hashids = Services::hashids();
+					$id_desenc = $hashids->decode($id);
+					$unArray = $this->unidades
+									->where('id',$id_desenc)
+									->where('activo', 1)
+									->first();
+					
+					$this->unidades->update($id_desenc,
+						[	'nombre'=> $this->request->getPost('nombre'),
+							'nombre_corto'=> $this->request->getPost('nombre_corto')
+						]);   
 
-                $id = $this->request->getPost('id');   
-                $id_desenc = base64_decode($id);
-               }catch (\Exception $error){
-                      var_dump($error->getMessage());
-               }           
-            $this->unidades->update($id_desenc,
-                [
-                'nombre'=> $this->request->getPost('nombre'),
-                'nombre_corto'=> $this->request->getPost('nombre_corto')
-                ]);   
-           // return redirect()->to(base_url().'/unidades');
-           $msgToast = [
-            's2Titulo' => $this->clase, 
-            's2Texto'  => 'Ingreso Actualizado',
-            's2Icono'  => 'success',
-            's2Toast'  => 'true'
-            ];           
-            $unidades = $this->unidades->where('activo', 1)->findAll();
-            $data = [ 
-                'titulo' => $this->clase,
-                'datos'  => $unidades
-            ];
-            echo view('header');
-            echo view('sweetalert2', $msgToast);            
-            echo view('unidades/unidades', $data);
-            echo view('footer');    
-        }else{
-            $msgToast = [
-                's2Titulo' => $this->clase, 
-                's2Texto' => 'No se validaron las reglas.',
-                's2Icono' => 'warning',
-                's2Toast' => 'true'
-            ];
-            $unidades = $this->unidades->where('activo', 1)->findAll();
-            $data = [ 
-                'titulo' => $this->tit, 
-                'fecha'  => $this->fecha_hoy,
-                'datos'  => $unidades
-            ];
-    
-            echo view('header');
-            echo view('sweetalert2', $msgToast);
-            echo view('flujocaja/entradas', $data);
-            echo view('footer');
-        }
+					$msgToast = [
+						's2Titulo' => $this->clase, 
+						's2Texto'  => 'Ingreso Actualizado',
+						's2Icono'  => 'success',
+						's2Toast'  => 'true'
+						];           
+					$s2Icono  = null;
+					$data = [ 
+						'titulo'  => $this->clase,
+						'datos'   => $unArray,
+						's2Icono' => $s2Icono,
+						'fecha'  => $this->fecha_hoy,
+					];								
+					return redirect()->to(base_url().'/unidades');
+				}else{
+					$msgToast = [
+						's2Titulo' => $this->clase, 
+						's2Texto' => 'No se validaron las reglas.',
+						's2Icono' => 'warning',
+						's2Toast' => 'true'
+					];
+					$unidades = $this->unidades->where('activo', 1)->findAll();
+					$data = [ 
+						'titulo' => $this->tit, 
+						'fecha'  => $this->fecha_hoy,
+						'datos'  => $unidades
+					];
+			
+					echo view('header');
+					echo view('sweetalert2', $msgToast);
+					echo view('flujocaja/entradas', $data);
+					echo view('footer');
+				}
+			} catch (\Exception $e) {
+				return ($e->getMessage());
+		}  
+		//}NO SE VALIDAN LAS REGLAS
+	}
+	/* ------------------------------------------------ */
+	/* Funcion eliminar($id)                            */
+	/* ------------------------------------------------ */
+    public function eliminar_ori($id){
+		try {
+			if ( null !== $id) {
+				// Controlamos recibir cargado el id Encriptado
+				// Instanciamos el Servicio
+				$hashids = Services::hashids();
+				$id_desenc = $hashids->decode($id);
+				$unArray = $this->unidades->where('id',$id_desenc)->first();
+				dd($unArray);
+			$this->unidades->update($id,
+				[
+				   'activo' => 0
+				]);   
+			return redirect()->to(base_url().'/unidades');
+			}
+		} catch (\Exception $e) {
+			return ($e->getMessage());
+		}	 
     }
-    public function eliminar($id){
-        $this->unidades->update($id,
-            [
-               'activo' => 0
-            ]);   
-        return redirect()->to(base_url().'/unidades');
-    }
+	public function eliminar($id){
+	
+	}
+	/* ------------------------------------------------ */
+	/* Funcion reingresar($id)                          */
+	/* ------------------------------------------------ */
     public function reingresar($id){
         $this->unidades->update($id,
             [

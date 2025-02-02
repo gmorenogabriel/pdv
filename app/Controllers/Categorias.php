@@ -7,6 +7,8 @@ use App\Libraries\Toastr;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use setasign\Fpdi\Fpdi;
+use Config\Services;
+use Hashids\Hashids;
 use App\Models\CategoriasModel;
 
 class Categorias extends BaseController
@@ -17,6 +19,8 @@ class Categorias extends BaseController
     //protected $this->clase;
 	 // Declaramos la propiedad
     protected $empresa, $tit, $ruc, $today, $fecha_hoy ;
+	protected $hashids;
+	protected $miClaveSecreta;
 
     public function __construct(){
         //$this->session = session();
@@ -47,10 +51,32 @@ class Categorias extends BaseController
         if($this->session->has('id_usuario') === false) { 
             return redirect()->to(base_url()); 
         }
-        $categorias = $this->categorias->where('activo',$activo)->findAll();
+		// $categorias = $this->categorias->where('activo',$activo)->findAll();
+       
+	    $unArray = $this->categorias->where('activo',$activo)->findAll();
+		// Instanciamos el Servicio
+		$hashids = Services::hashids();
+		// Generar el ID encriptado para cada registro
+		foreach ($unArray as &$dato) {		
+			$dato['id_encriptado'] = $hashids->encode($dato['id']);
+		}
+		// ------------------------------------------------------------------
+		// IMPORTANTE: Romper la referencia después del bucle
+		unset($dato); 
+		// SOLO SI NECESITO COMPROBAR "print_r($unidades);"
+		// ------------------------------------------------------------------		
+		$s2Icono = "success";
+		$msgToast = [
+            's2Titulo' => $this->clase, 
+            's2Texto' => 'Datos insertados',
+            's2Icono' => $s2Icono,
+            's2Toast' => 'true'
+        ];
+
         $data = [ 
-            'titulo' => 'Categorias',
-            'datos'  => $categorias,
+            'titulo' => $this->clase,
+            'datos'  => $unArray,
+			's2Icono'=> $s2Icono,
 			'fecha'  => $this->fecha_hoy,
         ];
 		
@@ -103,22 +129,30 @@ class Categorias extends BaseController
         echo view('footer');        
     }
     public function editar($id){
-        if ( null !== $id) {
-			// Controlamos recibir cargado el id Encriptado
+        	// Controlamos recibir cargado el id Encriptado
             // por si editaron la URL 
-   		try {
-                $id_desenc = base64_decode($id);
-                echo $id_desenc;
-                echo "<br>";
-                $categoria = $this->categorias->where('id', $id_desenc)->where('activo', 1)->first();
-                $allCat    = $this->categorias->where('activo', 1)->findAll();
-                $data = [ 
-                    'titulo'   => 'Editar ' . $this->clase, 
-                    'una_cat'  => $categoria,
-                    'todascat' => $allCat,
-                    'id_enc'   => $id_desenc,
-					'fecha'  => $this->fecha_hoy,				
-                ];
+   		try {	
+			if ( null !== $id) {
+				$hashids = Services::hashids();
+				$id_desenc = $hashids->decode($id);
+				$unArray = $this->unidades->where('id',$id_desenc)->first();
+
+				$data = [ 
+					 'titulo' => 'Editar '.$this->clase, 
+					 'datos'  => $unArray,
+					 'id_enc' => $id,
+					 'fecha'  => $this->fecha_hoy,
+				];                
+				
+//				$categoria = $this->categorias->where('id', $id_desenc)->where('activo', 1)->first();
+//                $allCat    = $this->categorias->where('activo', 1)->findAll();
+                // $data = [ 
+                    // 'titulo'   => 'Editar ' . $this->clase, 
+                    // 'una_cat'  => $categoria,
+                    // 'todascat' => $allCat,
+                    // 'id_enc'   => $id_desenc,
+					// 'fecha'  => $this->fecha_hoy,				
+                // ];
                 // foreach ($allCat as $key){
                 //     var_dump($key['id']); 
                 //     echo "<br>";
@@ -130,45 +164,85 @@ class Categorias extends BaseController
                 echo view('header');
                 echo view('categorias/editar', $data);
                 echo view('footer');
-                } catch (\Exception $e){
-						die($e->getMessage());
-				}       
-
-		}
+  		    }  else {
+				echo "Error al tratar de acceder " . $this->clase;
+			}
+		} catch (\Exception $e) {
+                return ($e->getMessage());
+        }               
     }
+	
     public function actualizar(){
         try {
-
+			$activo = 1;
             $id = $this->request->getPost('id');   
-            $id_desenc = base64_decode($id);
-		   }catch (\Exception $error){
-				  var_dump($error->getMessage());
-		   }           
-        //$this->categorias->update($this->request->getPost('id'),
-        
-        $this->categorias->update($id_desenc,
-            [
-            'nombre'=> $this->request->getPost('nombre')
-            ]);               
-        
-        //return redirect()->to(base_url().'/categorias');
-        $msgToast = [
-            's2Titulo' => $this->clase, 
-            's2Texto' => 'Actualizado',
-            's2Icono' => 'success',
-            's2Toast' => 'true'
-        ];
-        $categorias = $this->categorias->where('activo',1)->findAll();
-        $data = [ 
-            'titulo' => $this->clase,
-            'datos' => $categorias,
-		    'fecha'  => $this->fecha_hoy,			
-        ];
-        echo view('header');
-        echo view('sweetalert2', $msgToast);            
-		echo view($this->clase . '/'. $this->clase, $data);
-		echo view('footer');
-    }
+
+			if ( null !== $id) {
+					// Controlamos recibir cargado el id Encriptado
+					// Instanciamos el Servicio
+					$hashids = Services::hashids();
+					$id_desenc = $hashids->decode($id);
+					$unArray = $this->categorias->where('id',$id_desenc)->first();
+					//dd($unArray);
+					$this->categorias->update($id_desenc,
+						[
+						'nombre'=> $this->request->getPost('nombre'),
+						]);   
+			   // return redirect()->to(base_url().'/unidades');
+			    $msgToast = [
+					's2Titulo' => $this->clase, 
+					's2Texto'  => 'Ingreso Actualizado',
+					's2Icono'  => 'success',
+					's2Toast'  => 'true'
+					];               
+			
+				$unArray = $this->categorias->where('activo',$activo)->findAll();
+				// Instanciamos el Servicio
+				$hashids = Services::hashids();
+				// Generar el ID encriptado para cada registro
+				foreach ($unArray as &$dato) {		
+					$dato['id_encriptado'] = $hashids->encode($dato['id']);
+				}
+				// ------------------------------------------------------------------
+				// IMPORTANTE: Romper la referencia después del bucle
+				unset($dato); 
+				// SOLO SI NECESITO COMPROBAR "print_r($unidades);"
+				// ------------------------------------------------------------------	
+				$s2Icono  = null;		
+				$data = [ 
+					'titulo' => $this->clase,
+					'datos'  => $unArray,
+					's2Icono' => $s2Icono,			
+					'fecha'  => $this->fecha_hoy,			
+				];
+				echo view('header');
+				echo view('sweetalert2', $msgToast);            
+				echo view($this->clase . '/'. $this->clase, $data);
+				echo view('footer');
+    		}else{
+			$msgToast = [
+				's2Titulo' => $this->clase, 
+				's2Texto' => 'No se validaron las reglas.',
+				's2Icono' => 'warning',
+				's2Toast' => 'true'
+			];
+			$unidades = $this->unidades->where('activo', 1)->findAll();
+			$data = [ 
+				'titulo' => $this->tit, 
+				'fecha'  => $this->fecha_hoy,
+				'datos'  => $unidades
+			];
+	
+			echo view('header');
+			echo view('sweetalert2', $msgToast);
+			echo view('flujocaja/entradas', $data);
+			echo view('footer');
+		}
+		} catch (\Exception $e) {
+			return ($e->getMessage());
+		}  
+		//}NO SE VALIDAN LAS REGLAS
+	}
     public function eliminar($id){
         try {
             $id = $this->categorias->request->getPost('id');    

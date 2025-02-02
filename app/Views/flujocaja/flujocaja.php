@@ -1,5 +1,6 @@
 <div id="layoutSidenav_content">
     <main>
+	    <!-- Contenido principal -->
         <div class="wrapper">
             <div class="container">
                 <h1 class="mt-2"><?php echo $titulo . " - ". $fecha ?></h1>
@@ -22,7 +23,7 @@
                 <div class="table-responsive mt-3">
                     <input type="hidden" id="tituloreporte" value="Reporte Flujo de Caja.">  
                     <input type="hidden" id="columnasreporte" value="[0, 1, 2, 3, 4, 5]">        
-                    <table id="miTabla" class="table table-striped table-bordered">
+					<table id="miTabla" class="table table-striped table-bordered">
                         <thead>
                             <tr>
                                 <th>Id</th>

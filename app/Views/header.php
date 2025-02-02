@@ -12,21 +12,35 @@ $user_session = session();
         <title>PDV - SB Admin</title>
 		<link href="<?php echo base_url(); ?>css/style.min.css" rel="stylesheet" />
 		<link type="text/css" href="<?php echo base_url();?>css/styles.css" rel="stylesheet" />
-		<script src="<?php echo base_url(); ?>font-awesome/css/font-awesome.all.min.css" rel="stylesheet">></script>
+<!--		<script src="<?php echo base_url(); ?>font-awesome/css/font-awesome.all.min.css" rel="stylesheet">></script> -->
 		
-		    <!-- DataTables -->
-    <link rel="stylesheet" href="<?php echo base_url();?>js/datatables.net-bs/css/datatables.bootstrap.min.css">
-    <link rel="stylesheet" href="<?php echo base_url();?>js/datatables-export/css/buttons.datatables.min.css">
-	<link rel="stylesheet" href="<?php echo base_url();?>css/bootstrap.css">
+   <!-- CSS de Bootstrap
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables CSS 
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Font Awesome 
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+<!-- Bootstrap CSS -->
+<link href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<!-- DataTables CSS -->
-<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-<!-- DataTables JS 
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
--->
+<!-- FontAwesome (opcional, para íconos) -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 
-    </head>
+<!-- SB Admin 2 CSS -->
+<link href="path/to/sb-admin-2.min.css" rel="stylesheet">
+
+	<!-- Mensages Personalizados 
+	<script src="<?php echo base_url(); ?>js/sweetalert2.all.min.js" crossorigin="anonymous"></script>
+	-->
+	<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	
+    <!-- Estilos personalizados -->
+    <link href="<?php echo base_url(); ?>css/styles.css" rel="stylesheet" />
+    <link href="<?php echo base_url(); ?>css/style.min.css" rel="stylesheet" />
+</head>
         <body class="sb-nav-fixed">
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
             <a class="navbar-brand" href="<?php echo base_url(); ?>inicio">PDV - GM</a>

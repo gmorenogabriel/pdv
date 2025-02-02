@@ -4,12 +4,6 @@ use App\Libraries\Custom;
 use App\Controllers\BaseController;
 use CodeIgniter\I18n\Time;
 use App\Models\FlujoCajaModel;
-use App\Libraries\Toastr;
-
-//require FCPATH . 'vendor/autoload.php';
-//require_once __DIR__ . '/../vendor/autoload.php';
-//require_once COMPOSER_PATH;
-
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -95,6 +89,7 @@ class FlujoCaja extends BaseController{
         // echo $locale;
         // echo lang('Translate.form_validation_required');
         $flujocaja = $this->flujocaja->findAll();
+		$s2Icono = 'success';
         $data = [ 
             'titulo' => 'Flujo de Caja',
             'datos'  => $flujocaja,
@@ -107,7 +102,15 @@ class FlujoCaja extends BaseController{
 		// echo view('footer_dashboard');
 		
 		// Funcionamiento con Bootstrap 
+        $msgToast = [
+                's2Titulo' => $this->clase, 
+                's2Texto'  => 'listamos los Ingresos y Egresos',
+                's2Icono'  => $s2Icono,
+                's2Toast'  => 'true',
+                's2Footer' => 'Error Codigo duplicado',
+            ];
         echo view('header');
+        echo view('sweetalert2', $msgToast);          
 		echo view('flujocaja/flujocaja', $data);
 		echo view('footer');
     }

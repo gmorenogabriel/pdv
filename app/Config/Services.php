@@ -19,7 +19,7 @@ use Hashids\Hashids; // Importa la biblioteca Hashids
  * method format you should use for your service methods. For more examples,
  * see the core Services file at system/Config/Services.php.
  */
-class Services extends BaseService
+ class Services extends BaseService
 {
     /*
      * public static function example($getShared = true)
@@ -36,7 +36,11 @@ class Services extends BaseService
         if ($getShared) {
             return static::getSharedInstance('hashids');
         }
-        // Configura la biblioteca Hashids
-        return new Hashids('ElDiaQueMeQuieras', 10);
-    }
+	   // Define tu clave secreta
+		$secretKey = env('encryption.env','ElDiaQueMeQuieras');
+		$minHashLength = 8; // Longitud mínima del hash
+		$alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+
+		return new Hashids($secretKey, $minHashLength, $alphabet);
+	}
 }

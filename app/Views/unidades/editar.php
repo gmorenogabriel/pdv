@@ -4,9 +4,9 @@
         <h1 class="mt-2"><?php echo $titulo; ?></h1>
         <hr color="cyan"></hr>
         <!-- Encriptamos el Id -->
-        <?php 
-            $id_enc = base64_encode($id_enc); 
-        ?>
+        <?php       // $id_enc = base64_encode($id_enc);
+//		d($id_enc);
+		?>
         <!-- Imprime los errores de las validaciones del Formulario  -->
         <?php if(isset($validation)){ ?>
             <div class="alert alert-danger">
@@ -14,7 +14,7 @@
             </div>
         <?php } ?>        
 
-        <form action="<?php echo base_url(); ?>/unidades/actualizar" method="post" autocomplete="off">
+        <form action="<?php echo base_url('unidades/actualizar/' . $id_enc); ?>" method="post" autocomplete="off">
         <input type="hidden" id="id" name="id" value="<?php echo $id_enc; ?>" />
 <!--    <input type="hidden" value="<?php echo $datos['id']; ?>" name="id"/> -->
         <div class="form-group">
@@ -49,7 +49,7 @@
                 <div class="row"> 
                 <div class="col clearfix col-md-12"> 
                     <span class="float-left"><button type="submit" class="btn btn-success"><span class="fa fa-save"></span> Guardar</button></span>
-                    <span class="float-right"><a href="<?php echo base_url(); ?>/unidades" class="btn btn-primary"><i class="fa fa-undo" aria-hidden="true"></i> Regresar</a>
+                    <span class="float-right"><a href="<?php echo base_url('unidades'); ?>"<i class="btn btn-primary"><i class="fa fa-undo" aria-hidden="true"></i> Regresar</a>
                 </div>         
         <fieldset>
     </form>
