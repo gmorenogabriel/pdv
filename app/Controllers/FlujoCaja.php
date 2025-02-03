@@ -12,7 +12,7 @@ use setasign\Fpdi\Fpdi;
 
 class FlujoCaja extends BaseController{
 
-    protected $flujocaja, $myTime, $router, $_method, $controlador, $clase;
+    protected $flujocaja, $myTime, $router, $_method, $_controller, $controlador, $clase;
     protected $reglasEntrada, $reglasSalida, $tituloConFecha;
 	protected $pdf, $dir;
     //protected $this->clase;
@@ -45,7 +45,8 @@ class FlujoCaja extends BaseController{
         $controlador = explode('\\', $_controller);
         $this->clase = $controlador[max(array_keys($controlador))] ;        
 
-        // Variables para nuestras reglas de validac.del Form
+
+        	// Variables para nuestras reglas de validac.del Form
 		 $this->reglasEntrada = [
 			'entrada' => [
 				'rules' => 'required|numeric|is_natural_no_zero',
@@ -84,6 +85,7 @@ class FlujoCaja extends BaseController{
     }
 
     public function index()    {
+
         if($this->session->has('id_usuario') === false) { 
             return redirect()->to(base_url()); 
         }
@@ -123,11 +125,56 @@ class FlujoCaja extends BaseController{
         echo view('header');
 		echo view('flujocaja/entradas', $data);
 		echo view('footer');
-    }
+    }	
     public function guardarentrada(){
+		// Usar el servicio de validación
+		$this->reglasEntrada = [
+			'entrada' => [
+				'rules' => 'required|numeric|is_natural_no_zero',
+				'errors' => [
+					'required' => 'El campo {field} es obligatorio.',
+					'numeric' => 'El campo {field} debe ser numérico.',
+					'is_natural_no_zero' => 'El campo {field} debe ser mayor a 0.',
+				],
+			],
+			'descripcion' => [
+				'rules' => 'required|min_length[5]|max_length[200]',
+				'errors' => [
+					'required' => 'El campo "Descripción" es obligatorio.',
+					'min_length' => 'El campo {field} debe tener al menos 5 caracteres.',
+					'max_length' => 'El campo {field} no debe exceder 200 caracteres.',
+				],
+			],
+		];
+		$validation = \Config\Services::validation(); 	
+		
+	log_message('debug', "Entrada antes del TRIM: " . $this->request->getPost('entrada'));
+	log_message('debug', "descripcion antes del TRIM: " . $this->request->getPost('descripcion'));
+	
+       // Limpiar los datos de entrada y descripción
+        $entrada = trim($this->request->getPost('entrada'));
+        $descripcion = trim($this->request->getPost('descripcion'));
+        $descripcion = preg_replace('/\r|\n/', '', $descripcion); // Limpiar saltos de línea
 
-        if ($this->request->getMethod() === 'POST' && $this->validate($this->reglasEntrada)) {
- 
+        // Reemplazar los datos en la solicitud
+        $this->request->setGlobal('POST', [
+            'entrada' => $entrada,
+            'descripcion' => $descripcion,
+        ]);
+
+		// Obtener los datos del formulario
+        $datosValidar = $this->request->getPost();
+		
+		log_message('debug', "Entrada DESPUES del TRIM: " . $this->request->getPost('entrada'));
+		log_message('debug', "descripcion DESPUES del TRIM: " . $this->request->getPost('descripcion'));
+	
+		if($this->request->getMethod() === "POST" &&
+		   $validation->setRules($this->reglasEntrada)->run(['entrada'=>$entrada, 'descripcion'=>trim($descripcion)])) {
+			// Validado
+			// $errors = $validation->getErrors();
+			log_message('info', 'Datos validados, proseguimos con la Insercion de los datos.');
+		    // si necesito validar las reglas desde el propio controlador entones:
+			// //&& $this->validate($this->reglasEntrada)) {
             // Valido las Reglas
             $entrada = $this->request->getPost('entrada') ? $entrada = $this->request->getPost('entrada') : 0;
             $saldo  = $this->flujocaja->saldoActual();
@@ -154,16 +201,23 @@ class FlujoCaja extends BaseController{
 				// Insercion EXITOSA			
 				log_message('info', 'Consulta ejecutada: ' . $query = $this->flujocaja->db->getLastQuery()); // Acceso correcto al objeto db desde el modelo
 
-				// Inserción EXITOSA - Mensajes Alerta SweetAlert 2
+				// Inserción EX"TOSA - Mensajes Alerta SweetAl 2
 				$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'insertar');
 				// --------------------------------------
 			} else {
+			   // ERRORES AL INSERTAR
+			   // Obtener los errores
+ 
 				// Error en la inserción
 				 log_message('error', 'Error al guardar el registro: ' . json_encode($this->flujocaja->errors()));
 			
-				// Error en la inserción
+				// Error en la inserción lo toma de la Base de Datos
 				$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'info');
 			}
+			// Traemos todos los registros de la BD
+			$data	= $this->flujocaja->obtenerTodosLosRegistros();
+
+			
 			// Llamamos a las vistas
 			echo view('header');
 			echo view('sweetalert2', $msgToast);            
@@ -171,18 +225,87 @@ class FlujoCaja extends BaseController{
 			echo view('footer');			
 
         }else{
+			$errors = $validation->getErrors();
 
-			// Error NO Valido las Reglas
+		// Mostrar los errores
+			foreach ($errors as $field => $error) {
+				log_message('debug', 'Campo: ' . $field . ' Error: ' . $error);
+				// echo "Error en el campo $field: $error<br>";
+			}
+			//echo "</pre>";
+			log_message('info', 'No valido las reglas ' . json_encode($validation->getErrors()));
+			// Captura los errores
+			$errors = $validation->getErrors();
+
+
 			// Mensajes Alerta SweetAlert 2 por fallo
 			$msgAlerta	= new SweetMessageModel();
 			$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'reglasinvalidas');
- 			// Llamamos a las vistas
-           return redirect()->to(base_url() . 'flujocaja');        }
+ 			// Cargamos $Data para enviar a las vistas
+			// Traemos todos los registros de la BD
+			$data	= $this->flujocaja->obtenerTodosLosRegistros();
+			
+			// Llamamos a las vistas
+			echo view('header'); 
+			echo view('sweetalert2', $msgToast);             
+			echo view('flujocaja/entradas', [
+				'titulo'		=> 'Ingreso de dinero',
+                'fecha'			=> $this->request->getPost('fechahoy'),
+                'descripcion'	=> $this->request->getPost('descripcion'),
+                'entrada'		=> number_format($entrada, 2, ',', '.'),
+                'salida'		=> '0',
+                'saldo'			=> 0,
+				'validation' 	=> $errors,
+						]); 
+			echo view('footer');				 
+
+             // return redirect()->to(base_url() . 'flujocaja', ['validation' => $this->validator]);        
+		  }
   }
-
+ 
     public function guardarsalida(){
+		// Usar el servicio de validación	
+		$this->reglasSalida = [
+			'salida' => [
+				'rules' => 'required|numeric|is_natural_no_zero',
+				'errors' => [
+					'required' => 'El campo {field} es obligatorio.',
+					'numeric' => 'El campo {field} debe ser numérico.',
+					'is_natural_no_zero' => 'El campo {field} debe ser mayor a 0.',
+				],
+			],
+			'descripcion' => [
+				'rules' => 'required|min_length[5]|max_length[200]',
+				'errors' => [
+					'required' => 'El campo "Descripción" es obligatorio.',
+					'min_length' => 'El campo {field} debe tener al menos 5 caracteres.',
+					'max_length' => 'El campo {field} no debe exceder 200 caracteres.',
+				],
+			],
+		];
+		$validation = \Config\Services::validation(); 	
+		
+		log_message('debug', "Salida antes del TRIM: " . $this->request->getPost('salida'));
+		log_message('debug', "descripcion antes del TRIM: " . $this->request->getPost('descripcion'));
 
-        if($this->request->getMethod() === "POST" && $this->validate($this->reglasSalida)){
+        // Limpiar los datos de salida y descripción
+		$salida = trim($this->request->getPost('salida'));
+		$descripcion = trim($this->request->getPost('descripcion'));
+		
+         // Reemplazar los datos en la solicitud
+        $this->request->setGlobal('POST', [
+            'salida' => $salida,
+            'descripcion' => $descripcion,
+        ]);
+		
+		log_message('debug', "Salida DESPUES del TRIM: " . $this->request->getPost('salida'));
+		log_message('debug', "descripcion DESPUES del TRIM: " . $this->request->getPost('descripcion'));
+		
+		if($this->request->getMethod() === "POST" &&
+		   $validation->setRules($this->reglasSalida)->run(['salida'=>$salida, 'descripcion'=>trim($descripcion)])) {
+			// Validado
+			// $errors = $validation->getErrors();
+		
             // Valido las Reglas
 			$salida = $this->request->getPost('salida') ? $salida = $this->request->getPost('salida') : 0;
             $saldo  = $this->flujocaja->saldoActual();
@@ -190,7 +313,7 @@ class FlujoCaja extends BaseController{
             $saldo	= $saldo-$salida;
 
             $data = [
-				'titulo'		=> 'Salida de dinero',
+				'titulo'		=> 'Egreso de dinero',
                 'fecha'			=> $this->request->getPost('fechahoy'),
                 'descripcion'	=> $this->request->getPost('descripcion'),
                 'entrada'		=> '0',
@@ -210,23 +333,59 @@ class FlujoCaja extends BaseController{
 				log_message('info', 'Consulta ejecutada: ' . $query = $this->flujocaja->db->getLastQuery()); // Acceso correcto al objeto db desde el modelo
 
 				// Inserción EXITOSA - Mensajes Alerta SweetAlert 2
-				$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'actualizar');
+				$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'insertar');
 				// --------------------------------------
 			} else {
+				// ERRORES AL INSERTAR
 				// Error en la inserción
 				 log_message('error', 'Error al guardar el registro: ' . json_encode($this->flujocaja->errors()));
 				// return redirect()->back()->with('error', 'Hubo un problema al guardar el registro.');
 				$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'info');
 			}
-            return redirect()->to(base_url() . 'flujocaja');
+			// Traemos todos los registros de la BD
+			$data	= $this->flujocaja->obtenerTodosLosRegistros();
+
+			
+			// Llamamos a las vistas
+			echo view('header');
+			echo view('sweetalert2', $msgToast);            
+			echo view('flujocaja/flujocaja', $data);
+			echo view('footer');			
+
         }else{
-            // Error NO Valido las Reglas
+			$errors = $validation->getErrors();
+
+		// Mostrar los errores
+			foreach ($errors as $field => $error) {
+				log_message('debug', 'Campo: ' . $field . ' Error: ' . $error);
+				// echo "Error en el campo $field: $error<br>";
+			}
+			log_message('info', 'No valido las reglas ' . json_encode($validation->getErrors()));
+
 			// Mensajes Alerta SweetAlert 2 por fallo
 			$msgAlerta	= new SweetMessageModel();
 			$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'reglasinvalidas');
- 			// Llamamos a las vistas
-			return redirect()->to(base_url() . 'flujocaja');        }
-    }
+ 			// Cargamos $Data para enviar a las vistas
+			// Traemos todos los registros de la BD
+			$data	= $this->flujocaja->obtenerTodosLosRegistros();
+			
+			// Llamamos a las vistas
+			echo view('header'); 
+			echo view('sweetalert2', $msgToast);             
+			echo view('flujocaja/salidas', [
+				'titulo'		=> 'Egreso de dinero',
+                'fecha'			=> $this->request->getPost('fechahoy'),
+                'descripcion'	=> $this->request->getPost('descripcion'),
+                'entrada'		=> 0,
+                'salida'		=> number_format($salida, 2, ',', '.'),
+                'saldo'			=> 0,
+				'validation' 	=> $errors,
+						]); 
+			echo view('footer');				 
+
+             // return redirect()->to(base_url() . 'flujocaja', ['validation' => $this->validator]);        
+		  }
+  }
     // ----------------------------------------------
 	// Genera Excel y Pdf
 	// ----------------------------------------------	
@@ -234,7 +393,7 @@ class FlujoCaja extends BaseController{
 	   try {
 			$nombreListado = 'Flujo de Caja';
 			$extension = 'xlsx';
-            // Simulación de datos de entrada
+            // Simulación de datos de salida
 			$flujocaja = $this->flujocaja->findAll();
 			$data = [ 
 				'titulo' => $nombreListado,

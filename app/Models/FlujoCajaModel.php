@@ -19,6 +19,10 @@ class FlujoCajaModel extends Model{
     protected $deletedField  = '';
 
     protected $validationRules    = [];
+	     // Variables para nuestras reglas de validac.del Form
+		 
+	
+
     protected $validationMessages = [];
     protected $skipValidation     = false;
 	

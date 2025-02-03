@@ -5,14 +5,17 @@
         <hr color="cyan">
         <!-- para las validaciones del Formulario -->
         <!-- Imprime los errores de las validaciones del Formulario  -->
-        <?php if(isset($validation)){ ?>
-            <div class="alert alert-danger">
-                <?php echo $validation->listErrors(); ?>
-            </div>
-        <?php } ?>
-
+  <?php if (isset($validation) && !empty($validation)): ?>
+  <!-- ? php print_r($validation); ?> -->
+    <div class="alert alert-danger">
+        <ul>
+            <?php foreach ($validation as $field => $error): ?>
+                <li><strong><?= esc($field) ?>:</strong> <?= esc($error) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
     <form id="pdvFormInput"  action="<?php echo base_url(); ?>flujocaja/guardarentrada" method="POST" enctype="multipart/form-data" autocomplete="off">
-
 <form>
     <div class="row">
         <div class="form-group col-md-3">   
@@ -26,34 +29,36 @@
             </div>
         </div>    
         &nbsp;
-        <div class="form-group col-md-4">
-            <div class="input-group-prepend">
-                <span class="input-group-text" 
-                id="inputGroup-sizing-default">Entrada $</span>
-                <input type="input"  
-                    id="entrada"
-                    name="entrada" 
-                    class="form-control" 
-                    aria-label="Sizing example input" 
-                    aria-describedby="inputGroup-sizing-default"
-                    value="<?php echo set_value(number_format((float)'entrada', 2, ',', '.')); ?>"
-                    autofocus required>
-            </div>
-        </div>
-    </div>
-    <div class="form-row">        
-    <div class="form-group col-md-7">
-        <label>Descripción</label>
-        <textarea class="form-control" 
-            rows="5" 
-            id="descripcion" 
-            name="descripcion" 
-            style="align-content:left;"
-            required
-            class="descripcion"><?=set_value('descripcion')?>            
-        </textarea>                    
-    </div>
-</div>
+		<div class="form-row">        
+		   <div class="form-group col-md-4">
+			   <label for="entrada">Entrada</label>
+			   <input type="number" class="form-control
+				   id="entrada"  name="entrada"    required 
+				   value="<?= set_value('entrada') ?>">
+		   </div>
+		</div>
+		<?php if (isset($validation['entrada'])): ?>
+			<small class="text-danger"><?= $validation['entrada'] ?></small>
+		<?php endif; ?>	
+	</div>
+
+
+	<div class="form-row">        
+		<div class="form-group col-md-7">
+			<label>Descripción</label>
+			<textarea class="form-control" 
+				rows="5" 
+				id="descripcion" 
+				name="descripcion" 
+				style="text-align:left;"
+				required
+				value="<?= trim(set_value('descripcion')) ? ltrim(rtrim(set_value('descripcion'))) : '' ?>">
+			</textarea>                    
+		</div>
+	</div>
+	<?php if (isset($validation['descripcion'])): ?>
+		<small class="text-danger"><?= $validation['descripcion'] ?></small>
+	<?php endif; ?>
 
 <!-- Acciones de botones -->
 <fieldset class="form-group border p-1 col-md-12">

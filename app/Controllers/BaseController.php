@@ -83,4 +83,37 @@ class BaseController extends Controller{
 		$empresa = config('Config\Custom');
 		return $empresa;
 	}
+	public function ejemploReflection(){
+		$reflection = new \ReflectionClass($this);
+		$refClass = $reflection->getShortName();
+	
+		//echo "<br>" . "===============================" . "</br>";
+	    // Obtener el nombre completo del método (clase + método)
+        $metodoCompleto = __METHOD__; // Devuelve "App\Controllers\MiControlador::miMetodo"
+
+        // Obtener solo el nombre del método
+        $metodoSolo = __FUNCTION__; // Devuelve "miMetodo"
+
+        // Obtener el nombre de la clase
+        $nombreClase = __CLASS__; // Devuelve "App\Controllers\MiControlador"
+		// echo "<br>" . "===============================" . "</br>";
+
+			//	echo "Clase: $nombreClase<br>";
+			//	echo "Método completo: $metodoCompleto<br>";
+			//	echo "Método: $metodoSolo<br>";
+
+			//  echo "<br>" . "===============================" . "</br>";
+
+		   // Crear una instancia de ReflectionClass
+				$reflection = new \ReflectionClass($this);
+
+				// Obtener todos los métodos de la clase actual
+				$metodos = $reflection->getMethods();
+
+				foreach ($metodos as $metodo) {
+				//	echo $metodo->name . "<br>"; // Imprime el nombre de cada método
+				}
+		//echo "<br>" . "===============================" . "</br>";		
+		//d($refClass);
+		}
 }
