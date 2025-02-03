@@ -37,6 +37,8 @@ $routes->group('/',['namespace' => 'App\Controllers'],function($routes){
         $routes->get('flujocaja',        				'FlujoCaja::index',   			['as' => 'flujocaja']);
 		$routes->get('flujocaja/entradas',      		'FlujoCaja::entradas',   		['as' => 'flujocajaentradas']);
 		$routes->get('flujocaja/salidas',      			'FlujoCaja::salidas',   		['as' => 'flujocajasalidas']);		
+		$routes->post('flujocaja/guardarentrada',        'FlujoCaja::guardarentrada', 	['as' => 'flujocajaguardarentrada']);		
+		$routes->post('flujocaja/guardarsalida',         'FlujoCaja::guardarsalida', 	['as' => 'flujocajaguardarsalida']);				
 		$routes->get('flujocaja/generaExcel',			'FlujoCaja::generaExcel',   	['as' => 'flujoexcel']);
 		$routes->get('flujocaja/generaPdf',				'FlujoCaja::generaPdf',   		['as' => 'flujopdf']);
 /*      --------- */		
@@ -49,6 +51,7 @@ $routes->group('/',['namespace' => 'App\Controllers'],function($routes){
 		$routes->get('unidades/nuevo',    				'Unidades::nuevo',     			['as' => 'unidadesnuevo']);			
 		$routes->get('unidades/editar/(:any)',			'Unidades::editar/$1',			['as' => 'unidadesedit']);			
 		$routes->post('unidades/actualizar/(:any)',		'Unidades::actualizar/$1',		['as' => 'unidadesactual']);
+		$routes->post('unidades/eliminar/(:any)',		'Unidades::actualizar/$1',		['as' => 'unidadesactual']);
 		$routes->get('unidades/encode/(:num)', 			'Unidades::encodeData/$1');
 		$routes->get('unidades/decode/(:any)', 			'Unidades::decodeData/$1');
 		$routes->get('unidades/generaExcel',			'Unidades::generaExcel',   		['as' => 'unidadesexcel']);

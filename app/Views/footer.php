@@ -36,8 +36,8 @@
     $(document).ready(function() {
 		console.log ("Ejecutando en el Documento");
             $('#miTabla').DataTable({
-			    lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "Todos"] ],
-				pageLength: 10, 		// Valor predeterminado para mostrar
+			    lengthMenu: [ [10, 15, 20, -1], [10, 15, 20, "Todos"] ],
+				pageLength: 15, 		// Valor predeterminado para mostrar
                 paging: true,           // Habilita la paginación
                 searching: true,        // Habilita la barra de búsqueda
                 lengthChange: true,     // Habilita el selector "Mostrar X filas"
