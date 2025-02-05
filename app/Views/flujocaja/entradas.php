@@ -16,7 +16,6 @@
     </div>
 <?php endif; ?>
     <form id="pdvFormInput"  action="<?php echo base_url(); ?>flujocaja/guardarentrada" method="POST" enctype="multipart/form-data" autocomplete="off">
-<form>
     <div class="row">
         <div class="form-group col-md-3">   
             <div class="input-group-prepend">     
@@ -34,7 +33,7 @@
 			   <label for="entrada">Entrada</label>
 			   <input type="number" class="form-control
 				   id="entrada"  name="entrada"    required 
-				   value="<?= set_value('entrada') ?>">
+				   value="<?= set_value('entrada'); ?>">
 		   </div>
 		</div>
 		<?php if (isset($validation['entrada'])): ?>

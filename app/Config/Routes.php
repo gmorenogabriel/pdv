@@ -30,6 +30,7 @@ $routes->setAutoRoute(false);
 $routes->get('/', 'Usuarios::login');
 
 $routes->group('/',['namespace' => 'App\Controllers'],function($routes){
+		$routes->get('testDev',   				'Unidades::testDev',   			['as' => 'testDev']);
         $routes->get('login',            				'Usuarios::login',    			['as' => 'usuarios']);   // Web de Ingreso http://localhost:8084/pdv/public/login
 		$routes->get('dash',             				'Dashboard::index',    			['as' => 'dash']); 
         $routes->post('usuarios/valida', 				'Usuarios::valida',   			['as' => 'valida']);
@@ -51,7 +52,8 @@ $routes->group('/',['namespace' => 'App\Controllers'],function($routes){
 		$routes->get('unidades/nuevo',    				'Unidades::nuevo',     			['as' => 'unidadesnuevo']);			
 		$routes->get('unidades/editar/(:any)',			'Unidades::editar/$1',			['as' => 'unidadesedit']);			
 		$routes->post('unidades/actualizar/(:any)',		'Unidades::actualizar/$1',		['as' => 'unidadesactual']);
-		$routes->post('unidades/eliminar/(:any)',		'Unidades::actualizar/$1',		['as' => 'unidadesactual']);
+		$routes->post('unidades/insertar',				'Unidades::insertar',			['as' => 'unidadesinsertar']);
+		$routes->get('unidades/eliminar/(:any)',		'Unidades::eliminar/$1',		['as' => 'unidadeseliminar']);
 		$routes->get('unidades/encode/(:num)', 			'Unidades::encodeData/$1');
 		$routes->get('unidades/decode/(:any)', 			'Unidades::decodeData/$1');
 		$routes->get('unidades/generaExcel',			'Unidades::generaExcel',   		['as' => 'unidadesexcel']);

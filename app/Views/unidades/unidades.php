@@ -4,13 +4,19 @@
             <div class="wrapper">
                 <div class="container">
                     <h1 class="mt-2"><?php echo $titulo . " - " . $fecha; ?></h1>
+			
+				<?php d($datos[0]); ?>  
+					<?php foreach ($datos as $dato) { ?>
+						<?php echo $dato['id'] . ' ' .$dato['nombre'] . ' ' . $dato['id_enc'] . '<br/>'; ?>
+					 <?php } ?>
+						
 					<hr color="cyan"></hr>					
-               <!--
+          	<!--      
 					<hr class="border border-info"> -->
                     <div class="d-flex justify-content-between">
                         <div>
-                            <a href="<?php echo base_url(); ?>unidades/nuevo" class="btn btn-primary">Agregar</a>
-                            <a href="<?php echo base_url(); ?>unidades/eliminados" class="btn btn-warning">Eliminados</a>
+                            <a href="<?php echo base_url('unidades/nuevo'); ?>" class="btn btn-primary">Agregar</a>
+                            <a href="<?php echo base_url('unidades/eliminados/' . $dato['id_enc']); ?>" class="btn btn-warning">Eliminados</a>
                         </div>
                         <div>
                             <button id="btnGeneraExcelUnidades" type="button" class="btn btn-success">
@@ -44,12 +50,20 @@
                                         <td><?php echo $dato['nombre']; ?></td>
                                         <td><?php echo $dato['nombre_corto']; ?></td>
                                         <td>
-                                            <a href="<?php echo base_url('unidades/editar/' . $dato['id_encriptado']); ?>" class="btn btn-success">
+                                            <a href="<?php echo base_url('unidades/editar/' . $dato['id_enc']); ?>" class="btn btn-success">
                                                 <i class="fas fa-pencil-alt"></i>
                                             </a>
-                                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalConfirmarEliminar" data-id="<?php echo $dato['id_encriptado']; ?>">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
+<a href="<?php echo base_url('unidades/eliminar/' . $dato['id_enc'] ); ?>" id="btnEliminar" class="btn btn-danger">
+    EliminarN
+</a>
+<!-- 
+<a href="#" class="btn btn-danger delete-link" data-id="<?php echo $dato['id_enc']; ?>" data-bs-toggle="modal" data-bs-target="#modalConfirmarEliminar">
+    Eliminar
+</a> -->
+
+
+                                                <i class="fas fa-cash"></i>
+                                            </a>											
                                         </td>
                                     </tr>
                                 <?php } ?>
@@ -59,41 +73,51 @@
                 </div>
             </div>
         </main>
- 
-    <!-- Modal de Confirmación -->
-    <div class="modal fade" id="modalConfirmarEliminar" tabindex="-1" aria-labelledby="modalConfirmarEliminarLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalConfirmarEliminarLabel">Confirmar Eliminación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    ¿Estás seguro de que deseas eliminar este elemento?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <form id="formEliminar" method="POST" action="">
-                        <input type="hidden" name="id" id="idEliminar" value="">
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-  <script>
-        // Configuración del modal para eliminar
-        const modalConfirmarEliminar = document.getElementById('modalConfirmarEliminar');
-        modalConfirmarEliminar.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-id');
-            document.getElementById('idEliminar').value = id;
-        });
+<script>
+// Función para mostrar el SweetAlert y pasar la ID
+function confirmarEliminacion(id) {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: `Se eliminará el elemento con ID: ${dato['id_enc']}`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Acción de eliminación
+            eliminarElemento(id);
+        } else if (result.isDismissed) {
+            console.log('Operación cancelada');
+        }
+    });
+}
 
-        // Inicialización de DataTables
-        $(document).ready(function () {
-            $('#reportes').DataTable();
-        });
-    </script>
+// Función de eliminación (puedes reemplazarla por tu lógica)
+function eliminarElemento(id) {
+    console.log(`Eliminando el elemento con ID: ${id}`);
+    // Aquí puedes realizar una solicitud AJAX o cualquier lógica para eliminar
+    // Por ejemplo: unidades/eliminar/
+    //
+    fetch(`/unidades/eliminar/${dato['id_enc']}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        Swal.fire('Eliminado!', 'El elemento ha sido eliminado.', 'success');
+    })
+    .catch(error => {
+        Swal.fire('Error', 'No se pudo eliminar el elemento.', 'error');
+    });
+    
+}
+
+// Llamar la función
+document.getElementById('btnEliminar').addEventListener('click', function() {
+    const id = this.getAttribute('data-id'); // Suponiendo que el botón tiene el ID como atributo
+    confirmarEliminacion(id);
+});
+
+</script>
 </body>
 </html>

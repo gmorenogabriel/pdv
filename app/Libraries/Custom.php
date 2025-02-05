@@ -1,6 +1,7 @@
 <?php namespace App\Libraries;
 
 use Config\Services;
+use Hashids\Hashids;
 /* Estas van en todos los Controladores del proyecto */
 // use App\Libraries\Backend_lib;  // Permisos
 //use App\Libraries\Custom;
@@ -112,7 +113,34 @@ Class Custom {
 						];
 			return $data;
 		}
+		public static function desencriptoID(string $clase, string $funcion, string $id){
+			try {
+				// Instanciamos el Servicio
+				$hashids = Services::hashids();
+				if ( null !== $id) {			
+					log_message('debug', $clase . '/' . $funcion . ' - el ID recibido $id : ' . $id);
+					
+					// Controlamos recibir cargado el id Encriptado
+					// Instanciamos el Servicio
+					$hashids = Services::hashids();
+					$id_desenc = implode('', $hashids->decode($id));
+					log_message('debug', $clase . '/' . $funcion . ' - el ID Desencriptado : ' . $id_desenc);
+					}else{
+						log_message('debug', $clase . '/' . $funcion . ' - el ID se recibió NULL : ' . $id);
+						$id_desenc = null;
+					}
+				} catch (\Exception $e) {
+					log_message('debug', $clase . '/' . $funcion . ' - No se logro desencriptar el id recibido: ' . $id . ' ==> ' . json_encode($id_desenc));
+						$id_desenc = null;
+				}	 
+			return $id_desenc;
+		}
 
+		public static function debugTrace(){
+			echo '<pre>';
+				print_r(debug_backtrace());
+			echo '</pre>';
+		}
 		public static function cantidadFilasTabla(string $tabla){
 			$db      = \Config\Database::connect();
 			$builder = $db->table($tabla);

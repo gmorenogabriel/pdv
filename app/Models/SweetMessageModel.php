@@ -58,26 +58,35 @@ class SweetMessageModel extends Model
 						// ->first(); 
 		// dd($this->db->getLastQuery());
 
-	  // Verificamos si el mensaje fue encontrado
+	  // Verificamos si el mensaje no fue encontrado
 		if (!$message) {
-			return null;  // Si no se encuentra, retornamos null o puedes manejar el caso como prefieras
-		}						  
-		//$data = [];
-		//foreach ($message as $msg){
 			$data = [
-				'clase'             => $message['clase'],
-				'accion' 			=> $message['accion'],
-				's2Icono' 			=> $message['s2Icono'],
-				's2Titulo' 			=> $message['s2Titulo'],
-				's2Texto' 			=> $message['s2Texto'],
-				's2Toast' 			=> $message['s2Toast'],
-				'showConfirmButton' => $message['showConfirmButton'],
-				'confirmButtonColor'=> $message['confirmButtonColor'],
-				'background' 		=> $message['background'],
-				'timer'				=> $message['timer'],
-				];		
-		//}
-		//dd($data);
+			    'clase'    			=> $this->clase,
+			    'accion'   			=> 'sinReglas',
+			    's2Icono'  			=> 'error',
+			    's2Titulo' 			=> 'Faltan definir Reglas',
+			    's2Texto'  			=> 'Administrador agregarlas en \"sweet_message\"',
+				's2Toast' 			=> true,
+				'showConfirmButton' => true,
+				'confirmButtonColor'=> true,
+				'background' 		=> '#dd6b55',
+				'timer'				=> 2000,				 
+				  ];
+				}else{		  
+					$data = [
+						'clase'             => $message['clase'],
+						'accion' 			=> $message['accion'],
+						's2Icono' 			=> $message['s2Icono'],
+						's2Titulo' 			=> $message['s2Titulo'],
+						's2Texto' 			=> $message['s2Texto'],
+						's2Toast' 			=> $message['s2Toast'],
+						'showConfirmButton' => $message['showConfirmButton'],
+						'confirmButtonColor'=> $message['confirmButtonColor'],
+						'background' 		=> $message['background'],
+						'timer'				=> $message['timer'],
+						];		
+				}
+				//dd($data);
 		return $data;
 	}
 }

@@ -10,15 +10,14 @@ use setasign\Fpdi\Fpdi;
 use Config\Services;
 use Hashids\Hashids;
 use App\Models\UnidadesModel;
-use App\Models\SweetMessageModel;
-use ReflectionMethod;
 
-class Unidades extends BaseController{
-	
-    protected $clase, $_method, $funcion;
+
+class Unidades extends BaseController
+{
+    protected $clase;
     protected $unidades;
     protected $reglas;
-	protected $empresa, $tit, $direcc, $ruc, $today, $fecha_hoy ;
+	protected $empresa, $tit, $ruc, $today, $fecha_hoy ;
     //protected $empresa;
 	protected $hashids;
 	protected $miClaveSecreta;
@@ -35,7 +34,7 @@ class Unidades extends BaseController{
         $this->empresa = Config('Custom');
 		
 		$this->tit = $this->empresa->empresaTitulo;
-		$this->direcc = $this->empresa->empresaDireccion;
+		$this->dir = $this->empresa->empresaDireccion;
         $this->ruc = $this->empresa->empresaRuc;
 
         $this->unidades = new UnidadesModel();
@@ -51,26 +50,7 @@ class Unidades extends BaseController{
         $_controller = $router->controllerName();         
         $controlador = explode('\\', $_controller) ;
         $this->clase = $controlador[max(array_keys($controlador))] ;
-        $this->funcion= $router->methodName();
-	
-		
-  // d($this->funcion);
-  // d($controlador);
-  // d($controlador);
-  // d(max(array_keys($controlador)));
-  // echo "----------------------- <br/>";
-  // $reflection = new \ReflectionClass($this);
-		// $refClass = $reflection->getShortName();
-		// d($refClass);
-// echo "----------------------- <br/>";
-// $reflection = new \ReflectionClass($this);
-// $methods = $reflection->getMethods();
-
-// foreach ($methods as $method) {
-    // echo $method->getName() . "<br/>"; // Muestra el nombre de cada método
-// }
-// echo "----------------------- <br/>";
-//  die();
+  
         // Configura la biblioteca Hashids con una clave secreta
 		//$this->miClaveSecreta = env('encryption.key');
         // $this->hashids = new Hashids($this->miClaveSecreta, 10);
@@ -85,7 +65,7 @@ class Unidades extends BaseController{
             'nombre' =>  [
                 'rules' => 'required|min_length[3]|max_length[50]',
                 'errors' => [
-                    'required'=> 'El campo {field} es obligatorio.',
+                    'required'=> 'El campo {field} es obligatorio.'
 					'min_length' => 'El campo {field} debe tener al menos 3 caracteres.',
 					'max_length' => 'El campo {field} no debe exceder 50 caracteres.',
 					],
@@ -93,7 +73,7 @@ class Unidades extends BaseController{
             'nombre_corto' => [               
                 'rules' => 'required|min_length[2]|max_length[10]',
                 'errors' =>  [
-                    'required'=> 'El campo {field} es obligatorio.',
+                    'required'=> 'El campo {field} es obligatorio.'
 					'min_length' => 'El campo {field} debe tener al menos 2 caracteres.',
 					'max_length' => 'El campo {field} no debe exceder 10 caracteres.',
 					
@@ -101,14 +81,11 @@ class Unidades extends BaseController{
                 ],
             ];
     }
-	
-	
 
 	/* ------------------------------------------------ */
 	/* Funcion index($activo = 0)                       */
 	/* ------------------------------------------------ */	
     public function index($activo = 1){
-	
         // Si no está Logueado lo manda a IDENTIFICARSE
         if($this->session->has('id_usuario') === false) { 
             return redirect()->to(base_url()); 
@@ -117,12 +94,13 @@ class Unidades extends BaseController{
         //echo $locale;
         //echo lang('Translate.form_validation_required');
 		
+		
         $unArray = $this->unidades->where('activo',$activo)->findAll();
 		// Instanciamos el Servicio
 		$hashids = Services::hashids();
 		// Generar el ID encriptado para cada registro
 		foreach ($unArray as &$dato) {		
-			$dato['id_enc'] = $hashids->encode($dato['id']);
+			$dato['id_encriptado'] = $hashids->encode($dato['id']);
 		}
 		// ------------------------------------------------------------------
 		// IMPORTANTE: Romper la referencia después del bucle
@@ -130,26 +108,27 @@ class Unidades extends BaseController{
 		// SOLO SI NECESITO COMPROBAR "print_r($unidades);"
 		// ------------------------------------------------------------------		
         $s2Icono  = null;
-	    $msgToast = [
-            's2Titulo' => $this->clase, 
-            's2Texto' => 'Listado de Unidades',
-            's2Icono' => 'info',
-            's2ConfirmButtonText' => true, // <!-- $s2ConfirmButtonText, -->
-            's2ShowConfirmButton' => true, // <!-- $s2ShowConfirmButton, -->            
-            's2Toast' => true,             // <!-- $s2Toast, -->
-            's2Footer' => 'PIE Mensaje',   // <!-- $s2Footer, -->
-        ];
+	    // $msgToast = [
+            // 's2Titulo' => $this->clase, 
+            // 's2Texto' => 'Listado de Unidades',
+            // 's2Icono' => 'info',
+            // 's2ConfirmButtonText' => true, // <!-- $s2ConfirmButtonText, -->
+            // 's2ShowConfirmButton' => true, // <!-- $s2ShowConfirmButton, -->            
+            // 's2Toast' => true,             // <!-- $s2Toast, -->
+            // 's2Footer' => 'PIE Mensaje',   // <!-- $s2Footer, -->
+        // ];
         $data = [ 
             'titulo'  => $this->clase,
             'datos'   => $unArray,
             's2Icono' => $s2Icono,
-			'fecha'  => $this->fecha_hoy,
+			'fecha'   => $this->fecha_hoy,
         ];
-
+	
 		echo view('header');
-//		echo view('sweetalert2', $msgToast);    
+		// echo view('sweetalert2', $msgToast);    
 		echo view('unidades/unidades', $data);
 		echo view('footer');
+		//echo view('dashboard');
     }
 
 	/* ------------------------------------------------ */
@@ -222,86 +201,6 @@ class Unidades extends BaseController{
 			// //&& $this->validate($this->reglasnombre)) {
             // Valido las Reglas
             $nombre = $this->request->getPost('nombre') ? $nombre = $this->request->getPost('nombre') : '';		
-			$data = [
-			    'titulo'		=> 'Ingreso de dinero',
-                'fecha'			=> $this->request->getPost('fechahoy'),
-                'nombre'	    => $nombre,
-                'nombre_corto'	=> $nombre_corto,
-            ];
-			// --------------------------------------
-			// Mensajes Alerta SweetAlert 2
-			// --------------------------------------
-			$msgAlerta	= new SweetMessageModel();
-			
-			// --------------------------------------
-			// --==> Insertamos los datos <==---
-			// --------------------------------------
-			if ($this->unidades->save($data)) {
-				// Insercion EXITOSA			
-				log_message('info', 'Consulta ejecutada: ' . $query = $this->unidades->db->getLastQuery()); // Acceso correcto al objeto db desde el modelo
-
-				// Inserción EX"TOSA - Mensajes Alerta SweetAl 2
-				$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'insertar');
-				// --------------------------------------
-			} else {
-			   // ERRORES AL INSERTAR
-			   // Obtener los errores
- 
-				// Error en la inserción
-				 log_message('error', 'Error al guardar el registro: ' . json_encode($this->unidades->errors()));
-			
-				// Error en la inserción lo toma de la Base de Datos
-				$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'info');
-			}
-			// Traemos todos los registros de la BD
-			$data	= $this->unidades->obtenerTodosLosRegistros();
-
-			
-			// Llamamos a las vistas
-			echo view('header');
-			echo view('sweetalert2', $msgToast);            
-			echo view('unidades/unidades', $data);
-			echo view('footer');			
-
-        }else{
-			$errors = $this->validation->getErrors();
-
-		// Mostrar los errores
-			foreach ($errors as $field => $error) {
-				log_message('debug', 'Campo: ' . $field . ' Error: ' . $error);
-				// echo "Error en el campo $field: $error<br>";
-			}
-			//echo "</pre>";
-			log_message('info', 'No valido las reglas ' . json_encode($this->validation->getErrors()));
-			// Captura los errores
-			$errors = $this->validation->getErrors();
-
-
-			// Mensajes Alerta SweetAlert 2 por fallo
-			$msgAlerta	= new SweetMessageModel();
-			log_message('debug', 'instancio SweetMessageModel');
-			$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'reglasinvalidas');
-			if (isset($msgToast['accion']) == 'sinReglas') {
-				log_message('debug', $this->clase . '/' . $this->funcion . ' - Se deben definir en sweet_message las, las alertas para: ' . $this->clase . '/' . $this->funcion);
-				}
- 			// Cargamos $Data para enviar a las vistas
-			// Traemos todos los registros de la BD
-			//$data	= $this->unidades->obtenerTodosLosRegistros();
-			
-			// Llamamos a las vistas
-			echo view('header'); 
-			echo view('sweetalert2', $msgToast);             
-			echo view('unidades/nuevo', [
-				'titulo'		=> 'Ingreso de dinero',
-                'fecha'			=> $this->request->getPost('fechahoy'),
-                'nombre'		=> $this->request->getPost('nombre'),
-                'nombre_corto'	=> $this->request->getPost('nombre_corto'),
-				'validation' 	=> $errors,
-				]); 
-			echo view('footer');				 
-
-		  }
-  }
 
             // ------------------------------------------
             // FORMA RAPIDA DE GRABAR SIN TRANSACCIONES
@@ -344,287 +243,186 @@ class Unidades extends BaseController{
         //    }else{
         //     $s2Texto = 'No se Insertaron los datos';   
         //    }
-         // $s2Texto = $respuesta  ===true             ?  'Datos insertados' : 'No se Insertaron los datos'; 
-         // $s2Icono = $respuesta  ===true             ?  'success'          : 'error'; 
-         // $s2ConfirmButtonText   = $respuesta===true ?  'Continuar'        : 'Continuar'; 
-         // $s2ShowConfirmButton   = $respuesta===true ?  'true'             : 'false'; 
-         // $s2Toast               = $respuesta===true ?  'true'             : 'error'; 
+         $s2Texto = $respuesta  ===true             ?  'Datos insertados' : 'No se Insertaron los datos'; 
+         $s2Icono = $respuesta  ===true             ?  'success'          : 'error'; 
+         $s2ConfirmButtonText   = $respuesta===true ?  'Continuar'        : 'Continuar'; 
+         $s2ShowConfirmButton   = $respuesta===true ?  'true'             : 'false'; 
+         $s2Toast               = $respuesta===true ?  'true'             : 'error'; 
          // Verificamos si ya existe el dato
          //dd($dataBD);
-         // $duplicado = $this->unidades->where('nombre_corto',$dataBD['nombre_corto'])->first();        
+         $duplicado = $this->unidades->where('nombre_corto',$dataBD['nombre_corto'])->first();        
 
-         // if ($duplicado=$dataBD['nombre_corto']){
-            // $s2Footer = $respuesta===true ? 'true' : 'El valor "' . $duplicado . '" ya existe en la columna "Nombre Corto".';
-         // }else{
-            // $s2Footer = $respuesta===true ? 'true' : null;
-         // }
+         if ($duplicado=$dataBD['nombre_corto']){
+            $s2Footer = $respuesta===true ? 'true' : 'El valor "' . $duplicado . '" ya existe en la columna "Nombre Corto".';
+         }else{
+            $s2Footer = $respuesta===true ? 'true' : null;
+         }
          
-         // $sweetalert2         = 'sweetalert2'; 
+         $sweetalert2         = 'sweetalert2'; 
 
-         // $msgToast = [
-            // 's2Titulo' => $this->clase, 
-            // 's2Texto' => $s2Texto,
-            // 's2Icono' => $s2Icono,
-            // 's2ConfirmButtonText' => $s2ConfirmButtonText,
-            // 's2ShowConfirmButton' => $s2ShowConfirmButton,            
-            // 's2Toast' => $s2Toast,
-            // 's2Footer' => $s2Footer,
-        // ];
-        // $unidades = $this->unidades->where('activo',1)->findAll();
-        // $data = [ 
-            // 'titulo' => $this->tit, //'Unidades',
-            // 'datos'  => $unidades,
-			// 'fecha'  => $this->fecha_hoy,			
-        // ];
+         $msgToast = [
+            's2Titulo' => $this->clase, 
+            's2Texto' => $s2Texto,
+            's2Icono' => $s2Icono,
+            's2ConfirmButtonText' => $s2ConfirmButtonText,
+            's2ShowConfirmButton' => $s2ShowConfirmButton,            
+            's2Toast' => $s2Toast,
+            's2Footer' => $s2Footer,
+        ];
+        $unidades = $this->unidades->where('activo',1)->findAll();
+        $data = [ 
+            'titulo' => $this->tit, //'Unidades',
+            'datos'  => $unidades,
+			'fecha'  => $this->fecha_hoy,			
+        ];
 		
-        // echo view('header');
-        // echo view($sweetalert2, $msgToast);    
-		// echo view('unidades/unidades', $data);
-		// echo view('footer');
+        echo view('header');
+        echo view($sweetalert2, $msgToast);    
+		echo view('unidades/unidades', $data);
+		echo view('footer');
 
-        // }else{
-            // $data = [ 
-                // 'titulo' => 'Agregar '.$this->clase,
-				// 'fecha'   	=> $this->fecha_hoy,
-                // 'validation' => $this->validator 
-            // ];
-            // echo view('header');
-            // echo view('unidades/nuevo', $data);
-            // echo view('footer');
-        // }        
-    // }
+        }else{
+            $data = [ 
+                'titulo' => 'Agregar '.$this->clase,
+				'fecha'   	=> $this->fecha_hoy,
+                'validation' => $this->validator 
+            ];
+            echo view('header');
+            echo view('unidades/nuevo', $data);
+            echo view('footer');
+        }        
+    }
 	
+	/* ------------------------------------------------ */
+	/* Funcion editar($id)                              */
+	/* ------------------------------------------------ */	
+    public function editar($id){
+	//, $valid=null){
+
+		try {
+		if ( null !== $id) {
+			// Controlamos recibir cargado el id Encriptado
+			// Instanciamos el Servicio
+			$hashids = Services::hashids();
+			$id_desenc = $hashids->decode($id);
+			$unArray = $this->unidades->where('id',$id_desenc)->first();
+
+			$data = [ 
+                 'titulo' => 'Editar '.$this->clase, 
+                 'datos'  => $unArray,
+                 'id_enc' => $id,
+				 'fecha'  => $this->fecha_hoy,
+			];
+			// if($valid != null){
+                // $data = [ 
+                    // 'titulo' => 'Editar '.$this->clase,
+                    // 'datos'  => $unArray,
+                    // 'validation' => $valid
+                // ];
+            // }else{
+                // $data = [ 
+                    // 'titulo' => 'Editar '.$this->clase, 
+                    // 'datos'  => $unArray,
+                    // 'id_enc' => $id_desenc,
+                // ];
+            // }
+            echo view('header');
+            echo view('unidades/editar', $data);
+            echo view('footer');
+		    }  else {
+				echo "Error al tratar de acceder " . $this->clase;
+			}
+		} catch (\Exception $e) {
+                return ($e->getMessage());
+        }          
+          
+    }
 	/* ------------------------------------------------ */
 	/* Funcion actualizar($id)                          */
 	/* ------------------------------------------------ */	
-	public function actualizar($id){
-	
-	dd("Actualiar");
-	
-		log_message('debug', 'Actualizar $id ' . $id);
-		log_message('debug', 'Funcion insertar ' . $this->request->getPost('nombre'));
-		
-	  if (!is_string($id)) {
-		log_message('debug', "El $id recibido no es un STRING" . $this->request->getPost('id'));	
-        throw new \InvalidArgumentException("El parámetro ID debe ser una cadena de texto.");
-		}
-		
-	// Instanciamos el Servicio
-				$hashids = Services::hashids();
-				$id_decoded = $hashids->decode($id);
-				$id_desenc = isset($id_decoded[0]) ? (string) $id_decoded[0] : null;
+    public function actualizar(){
+      //  if($this->request->getMethod() == "post" && $this->validate($this->reglas)){
+            try {
+			    $activo = 1;
+				$id = $this->request->getPost('id');   
+				if ( null !== $id) {
+					// Controlamos recibir cargado el id Encriptado
+					// Instanciamos el Servicio
+					$hashids = Services::hashids();
+					$id_desenc = $hashids->decode($id);
+					$unArray = $this->unidades
+									->where('id',$id_desenc)
+									->where('activo', 1)
+									->first();
+					
+					$this->unidades->update($id_desenc,
+						[	'nombre'=> $this->request->getPost('nombre'),
+							'nombre_corto'=> $this->request->getPost('nombre_corto')
+						]);   
 
-				log_message('debug', $this->clase . '/' . $this->funcion . ' id       : ' . $id );
-				log_message('debug', $this->clase . '/' . $this->funcion . ' id_desenc: ' . $id_desenc );
-				
-    // Limpiar los datos del Input: ombre y nombre_corto
-        $nombre = ltrim(rtrim($this->request->getPost('nombre')));
-        $nombre_corto = ltrim(rtrim($this->request->getPost('nombre_corto')));
-       // $nombre_corto = preg_replace('/\r|\n/', '', $nombre_corto); // Limpiar saltos de línea
-
-        // Reemplazar los datos en la solicitud
-        $this->request->setGlobal('POST', [
-            'nombre' => $nombre,
-            'nombre_corto' => $nombre_corto,
-        ]);
-
-		// Obtener los datos del formulario
-        $datosValidar = $this->request->getPost();
-		var_dump($datosValidar);
-		
-		log_message('debug', "nombre DESPUES del TRIM: " . $this->request->getPost('nombre'));
-		log_message('debug', "nombre DESPUES del TRIM: " . $this->request->getPost('nombre'));
-		log_message('debug', "nombre_corto DESPUES del TRIM: " . $this->request->getPost('nombre_corto'));
-	
-		if($this->request->getMethod() === "POST" &&
-		   $this->validation->setRules($this->reglas)->run(['nombre'=>$nombre, 'nombre_corto'=>trim($nombre_corto)])) {
-			// Validado
-			// $errors = $validation->getErrors();
-			log_message('info', 'Datos validados, proseguimos con la Insercion de los datos.');
-		    // si necesito validar las reglas desde el propio controlador entones:
-			// //&& $this->validate($this->reglasnombre)) {
-            // Valido las Reglas
-            $nombre = $this->request->getPost('nombre') ? $nombre = $this->request->getPost('nombre') : '';		
-			$data = [
-				'id_enc' 		=> $id,
-			    'titulo'		=> 'Unidades',
-                'fecha'			=> $this->request->getPost('fechahoy'),
-                'nombre'	    => $nombre,
-                'nombre_corto'	=> $nombre_corto,
-            ];
-			// --------------------------------------
-			// Mensajes Alerta SweetAlert 2
-			// --------------------------------------
-			$msgAlerta	= new SweetMessageModel();
-			// Verificamos que ya no exista el registro
-			// --------------------------------------
-			// --==> Insertamos los datos <==---
-			// --------------------------------------
-			try {
-				$this->unidades->update($id_desenc, $data);
-				// Insercion EXITOSA			
-				log_message('info', 'Consulta ejecutada: ' . $query = $this->unidades->db->getLastQuery()); // Acceso correcto al objeto db desde el modelo
-
-				// Inserción EX"TOSA - Mensajes Alerta SweetAl 2
-				$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'insertar');	
-   
-			   } catch (\CodeIgniter\Database\Exceptions\DatabaseException $e) {
-					// --------------------------------------
-
-				   // ERRORES AL INSERTAR
-				   // Obtener los errores
-	 
-					// Error en la inserción
-					 log_message('error', 'Error al guardar el registro: ' . json_encode($this->unidades->errors()));
-				
-					// Error en la inserción lo toma de la Base de Datos
-					$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'info');
-				}
-			// Traemos todos los registros de la BD
-//			$data	= $this->unidades->obtenerTodosLosRegistros();
-		
-		
-		// Leemos toda la tabla
-        $unArray = $this->unidades->where('activo','1')->findAll();
-		// Instanciamos el Servicio
-		$hashids = Services::hashids();
-		// Generar el ID encriptado para cada registro
-		foreach ($unArray as &$dato) {		
-			$dato['id_enc'] = $hashids->encode($dato['id']);
-			log_message('debug', $this->clase . '/' . $this->funcion . ' - ' . $hashids->encode($dato['id']));
-		}
-		// ------------------------------------------------------------------
-		// IMPORTANTE: Romper la referencia después del bucle
-		unset($dato); 
-		// SOLO SI NECESITO COMPROBAR "print_r($unidades);"
-		// ------------------------------------------------------------------		
-        $s2Icono  = null;
-        $data = [ 
-            'titulo'  => $this->clase,
-            'datos'   => $unArray,
-            's2Icono' => $s2Icono,
-			'fecha'   => $this->fecha_hoy,
-        ];		
-		
-			// Llamamos a las vistas
-			echo view('header');
-			echo view('sweetalert2', $msgToast);            
-			echo view('unidades/unidades', $data);
-			echo view('footer');				 
-
-        }else{
-			$errors = $this->validation->getErrors();
-
-		// Mostrar los errores
-			foreach ($errors as $field => $error) {
-				log_message('debug', 'Campo: ' . $field . ' Error: ' . $error);
-				// echo "Error en el campo $field: $error<br>";
-			}
-			//echo "</pre>";
-			log_message('info', 'No valido las reglas ' . json_encode($this->validation->getErrors()));
-			// Captura los errores
-			$errors = $this->validation->getErrors();
-
-
-			// Mensajes Alerta SweetAlert 2 por fallo
-			$msgAlerta	= new SweetMessageModel();
-			log_message('debug', 'instancio SweetMessageModel');
-			$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'reglasinvalidas');
-			if (isset($msgToast['accion']) == 'sinReglas') {
-				log_message('debug', $this->clase . '/' . $this->funcion . ' - Se deben definir en sweet_message las, las alertas para: ' . $this->clase . '/' . $this->funcion);
-				}
- 			// Cargamos $Data para enviar a las vistas
-			// Traemos todos los registros de la BD
-			//$data	= $this->unidades->obtenerTodosLosRegistros();
+					$msgToast = [
+						's2Titulo' => $this->clase, 
+						's2Texto'  => 'Ingreso Actualizado',
+						's2Icono'  => 'success',
+						's2Toast'  => 'true'
+						];           
+					$s2Icono  = null;
+					$data = [ 
+						'titulo'  => $this->clase,
+						'datos'   => $unArray,
+						's2Icono' => $s2Icono,
+						'fecha'  => $this->fecha_hoy,
+					];								
+					return redirect()->to(base_url().'/unidades');
+				}else{
+					$msgToast = [
+						's2Titulo' => $this->clase, 
+						's2Texto' => 'No se validaron las reglas.',
+						's2Icono' => 'warning',
+						's2Toast' => 'true'
+					];
+					$unidades = $this->unidades->where('activo', 1)->findAll();
+					$data = [ 
+						'titulo' => $this->tit, 
+						'fecha'  => $this->fecha_hoy,
+						'datos'  => $unidades
+					];
 			
-			// Llamamos a las vistas
-			echo view('header'); 
-			echo view('sweetalert2', $msgToast);             
-			echo view('unidades/unidades', [
-				'id_enc' 		=> $id,			
-				'titulo'		=> 'Ingreso de dinero',
-                'fecha'			=> $this->request->getPost('fechahoy'),
-                'nombre'		=> $nombre,
-                'nombre_corto'	=> $nombre_corto,
-				'validation' 	=> $errors,
-				]); 
-			echo view('footer');				 
-
-		  }
-  }
-	
+					echo view('header');
+					echo view('sweetalert2', $msgToast);
+					echo view('flujocaja/entradas', $data);
+					echo view('footer');
+				}
+			} catch (\Exception $e) {
+				return ($e->getMessage());
+		}  
+		//}NO SE VALIDAN LAS REGLAS
+	}
 	/* ------------------------------------------------ */
-	/* Funcion editar(string $id)                       */
-	/* ------------------------------------------------ */	
-    public function editar($id){
+	/* Funcion eliminar($id)                            */
+	/* ------------------------------------------------ */
+    public function eliminar_ori($id){
 		try {
 			if ( null !== $id) {
 				// Controlamos recibir cargado el id Encriptado
 				// Instanciamos el Servicio
 				$hashids = Services::hashids();
-				$id_decoded = $hashids->decode($id);
-				$id_desenc = isset($id_decoded[0]) ? (string) $id_decoded[0] : null;
-
-				log_message('debug', $this->clase . '/' . $this->funcion . ' id       : ' . $id );
-			//	log_message('debug', $this->clase . '/' . $this->funcion . ' id_desenc: ' . $id_desenc );
-				$unArray = $this->unidades->where('id', $id_desenc)->first();
-
-			$data = [ 
-				'titulo' => 'Editar '.$this->clase, 
-				'datos'  => $unArray,
-				'id_enc' => $id,
-				'fecha'  => $this->fecha_hoy,
-			];
-
-				echo view('header');
-				echo view('unidades/editar', $data);
-				echo view('footer');
-				}  else {
-					echo "Error al tratar de acceder " . $this->clase;
-				}
-			} catch (\Exception $e) {
-					return ($e->getMessage());
-			}          
-          
+				$id_desenc = $hashids->decode($id);
+				$unArray = $this->unidades->where('id',$id_desenc)->first();
+				dd($unArray);
+			$this->unidades->update($id,
+				[
+				   'activo' => 0
+				]);   
+			return redirect()->to(base_url().'/unidades');
+			}
+		} catch (\Exception $e) {
+			return ($e->getMessage());
+		}	 
     }
-	public function testDev($id){
-
-		print_r($id);
+	public function eliminar($id){
 	
 	}
-	
-	/* ------------------------------------------------ */
-	/* Funcion eliminar($id)                            */
-	/* ------------------------------------------------ */
-    public function eliminar($id){
-	
-			$id_desenc = Custom::desencriptoID ($this->clase, $this->funcion, $id);
-			log_message('debug', $this->clase . '/' . $this->funcion . ' - retornamos de la libreria Custom::desencriptoID: ' . $id);
-			 if ( $id_desenc !== null ) {
-			
-			// log_message('debug', $this->clase . '/' . $this->funcion . ' - el ID viene cargado $id : ' . $id);
-				// // Controlamos recibir cargado el id Encriptado
-				// // Instanciamos el Servicio
-				// $hashids = Services::hashids();
-				// $id_desenc = $hashids->decode($id);
-				// log_message('debug', $this->clase . '/' . $this->funcion . ' - Desencriptamos: ' . $id . ' ==> ' . json_encode($id_desenc));
-
-				$unArray = $this->unidades->where('id', $id_desenc)->first();
-				$unDecodedArray = json_encode($unArray);
-				d($unDecodedArray);
-				log_message('debug', $this->clase . '/' . $this->funcion . ' - array de datos: ' . $unDecodedArray);
-				//dd(implode('', $unArray));
-				try{
-					$this->unidades->update($id_desenc,	['activo' => 0]);   
-					} catch (\Exception $e) {
-							return ($e->getMessage());
-						}	 
-				}else{
-					return redirect()->to(base_url().'unidades');				
-				}
-
-    }
-
 	/* ------------------------------------------------ */
 	/* Funcion reingresar($id)                          */
 	/* ------------------------------------------------ */

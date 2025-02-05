@@ -43,7 +43,6 @@
 			<?php if (isset($validation['salida'])): ?>
 				<small class="text-danger"><?= $validation['salida'] ?></small>
 			<?php endif; ?>	
-
     </div>
 
 	<div class="form-row">        

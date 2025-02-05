@@ -1,42 +1,56 @@
 <div id="layoutSidenav_content">
 <main>
-    <div class="container-fluid">
-        <h1 class="mt-2"><?php echo $titulo; ?></h1>
-        <hr color="cyan"></hr>
-        <!-- Imprime los errores de las validaciones del Formulario  -->
-        <!-- <?php if(isset($validation)){ ?>
-            <div class="alert alert-danger">
-                <?php echo $validation->listErrors(); ?>
-            </div>
-        <?php } ?> -->
-
-        <form action="<?php echo base_url(); ?>/unidades/insertar" method="post" autocomplete="off">
+    <div class="container">
+        <h1 class="mt-2"><?php echo $titulo . " al " . $fecha; ?></h1>
+        <hr color="cyan">
+        <!-- para las validaciones del Formulario -->
+        <!-- Imprime los errores de las validaciones del Formulario  -->	
+  <?php if (isset($validation) && !empty($validation) && count($validation)>0) : ?>
+  <!-- ? php print_r($validation); ?> -->
+    <div class="alert alert-danger">
+        <ul>
+            <?php foreach ($validation as $field => $error): ?>
+                <li><strong><?= esc($field) ?>:</strong> <?= esc($error) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
+        <form action="<?php echo base_url('unidades/insertar'); ?>" method="POST" autocomplete="off">
         <!-- para que devuelva la fila del error de validacion -->
+<div class="row">
+    <div class="form-group col-md-6">
+        <!-- Nombre -->
+        <div class="d-flex align-items-center mb-3">
+            <label for="nombre" class="me-2" style="width: 150px;">Nombre:</label>
+            <input class="form-control" 
+                   id="nombre" 
+                   name="nombre" 
+                   type="text" 
+				   required
+				   value="<?= trim(set_value('nombre')) ? ltrim(rtrim(set_value('nombre'))) : '' ?>">
+        </div>
+		<!-- &nbsp; -->
+        <?php if (isset($validation['nombre'])): ?>
+            <small class="text-danger"><?= $validation['nombre'] ?></small>
+        <?php endif; ?>
 
-        <div class="form-group">
-            <div class="row">
-                <div class="col-12 col-sm-6">
-                    <label>Nombre</label>
-                    <input class="form-control" 
-                        id="nombre" name="nombre" 
-                        type="text" 
-                        value="<?php echo set_value('nombre'); ?>"
-                        autofocus />
-                        <span class="text-danger"><?= display_error($validation, 'nombre'); ?></span>
-                </div>
+        <!-- Nombre Corto -->
+        <div class="d-flex align-items-center">
+            <label for="nombre_corto" class="me-2" style="width: 150px;">Nombre Corto:</label>
+            <input class="form-control" 
+                   id="nombre_corto" 
+                   name="nombre_corto" 
+                   type="text" 
+				   required
+				   value="<?= trim(set_value('nombre_corto')) ? ltrim(rtrim(set_value('nombre_corto'))) : '' ?>">
+        </div>
+        <?php if (isset($validation['nombre_corto'])): ?>
+            <small class="text-danger"><?= $validation['nombre_corto'] ?></small>
+        <?php endif; ?>
+    </div>
+</div>
 
-                <div class="col-12 col-sm-6">
-                    <label>Nombre corto</label>
-                    <input class="form-control" 
-                        id="nombre_corto" name="nombre_corto" 
-                        type="text" 
-                        value="<?php echo set_value('nombre_corto'); ?>"
-                        />
-                        <span class="text-danger"><?= display_error($validation, 'nombre_corto'); ?></span>
-                        
-                </div>
-            </div>
-        </div>   
+
 <br><br><br>
 <br><br><br>
 <br><br><br>

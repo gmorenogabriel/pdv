@@ -7,7 +7,6 @@ use App\Models\FlujoCajaModel;
 use App\Models\SweetMessageModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-
 use setasign\Fpdi\Fpdi;
 
 class FlujoCaja extends BaseController{
@@ -146,6 +145,7 @@ class FlujoCaja extends BaseController{
 				],
 			],
 		];
+		// Instanciamos el servicio de Validación
 		$validation = \Config\Services::validation(); 	
 		
 	log_message('debug', "Entrada antes del TRIM: " . $this->request->getPost('entrada'));
@@ -193,7 +193,10 @@ class FlujoCaja extends BaseController{
 			// Mensajes Alerta SweetAlert 2
 			// --------------------------------------
 			$msgAlerta	= new SweetMessageModel();
-			
+			if (isset($msgToast['accion']) == 'sinReglas') {
+				log_message('debug', $this->clase . '/' . $this->funcion . ' - Se deben definir en sweet_message las, las alertas para: ' . $this->clase . '/' . $this->funcion);
+				}
+
 			// --------------------------------------
 			// --==> Insertamos los datos <==---
 			// --------------------------------------

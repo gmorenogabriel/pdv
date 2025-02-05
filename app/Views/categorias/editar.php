@@ -15,7 +15,7 @@
         <?php } ?>        
 
         <!-- Imprime los errores de las validaciones del Formulario  -->       
-        <form action="<?php echo base_url(); ?>/categorias/actualizar" method="post" autocomplete="off">
+        <form action="<?php echo base_url('categorias/actualizar'); ?>" method="post" autocomplete="off">
         <input type="hidden" id="id" name="id" value="<?php echo $id_enc; ?>" />
 
         <div class="form-group">

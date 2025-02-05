@@ -87,7 +87,7 @@ class BaseController extends Controller{
 		$reflection = new \ReflectionClass($this);
 		$refClass = $reflection->getShortName();
 	
-		//echo "<br>" . "===============================" . "</br>";
+		//ho "<br>" . "===============================" . "</br>";
 	    // Obtener el nombre completo del método (clase + método)
         $metodoCompleto = __METHOD__; // Devuelve "App\Controllers\MiControlador::miMetodo"
 

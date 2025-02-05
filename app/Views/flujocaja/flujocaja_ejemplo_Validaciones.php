@@ -1,4 +1,5 @@
-    public function guardarentrada(){
+<?php namespace App\Controllers;    
+	public function guardarentrada(){
 		// Usar el servicio de validación
 		$this->reglasEntrada = [
 			'entrada' => [
@@ -33,9 +34,6 @@
             'entrada' => $entrada,
             'descripcion' => $descripcion,
         ]);
-
-		// Obtener los datos del formulario
-        $datosValidar = $this->request->getPost();
 		
 		log_message('debug', "Entrada DESPUES del TRIM: " . $this->request->getPost('entrada'));
 		log_message('debug', "descripcion DESPUES del TRIM: " . $this->request->getPost('descripcion'));
@@ -77,10 +75,8 @@
 				$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'insertar');
 				// --------------------------------------
 			} else {
-			   // ERRORES AL INSERTAR
-			   // Obtener los errores
- 
-				// Error en la inserción
+			    // ERRORES AL INSERTAR
+				// Error en la inserión
 				 log_message('error', 'Error al guardar el registro: ' . json_encode($this->flujocaja->errors()));
 			
 				// Error en la inserción lo toma de la Base de Datos
@@ -104,11 +100,7 @@
 				log_message('debug', 'Campo: ' . $field . ' Error: ' . $error);
 				// echo "Error en el campo $field: $error<br>";
 			}
-			//echo "</pre>";
 			log_message('info', 'No valido las reglas ' . json_encode($validation->getErrors()));
-			// Captura los errores
-			$errors = $validation->getErrors();
-
 
 			// Mensajes Alerta SweetAlert 2 por fallo
 			$msgAlerta	= new SweetMessageModel();
