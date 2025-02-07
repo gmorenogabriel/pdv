@@ -15,8 +15,12 @@
         </ul>
     </div>
 <?php endif; ?>
-        <form action="<?php echo base_url('unidades/insertar'); ?>" method="POST" autocomplete="off">
+        <form id="insertForm" action="<?php echo base_url('unidades/insertar'); ?>" method="POST" autocomplete="off">
         <!-- para que devuelva la fila del error de validacion -->
+		
+		<!-- Campo oculto 'activo'=1 -->
+		<input type="hidden" name="activo" value="1">
+
 <div class="row">
     <div class="form-group col-md-6">
         <!-- Nombre -->
@@ -68,4 +72,50 @@
     </form>
 </div>
 </main>
-<!-- <script src="<?php echo base_url(); ?>/js/formulario.js"></script> -->
+
+<!-- <script src="< ? php echo base_url(); ?>/js/formulario.js"></script> -->
+
+   <script>
+        document.getElementById('insertForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Evitar que el formulario se envíe de forma tradicional
+
+            const formData = new FormData(this);
+
+// Recorre todos los datos recibidos
+//const formData = new FormData(this);
+for (let [key, value] of formData.entries()) {
+    console.log(`${key}: ${value}`);
+}
+
+
+            fetch('<?= site_url('unidades/insertar') ?>', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Usar SweetAlert2 para mostrar el resultado
+                if (data.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Éxito',
+                        html: data.message,
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        html: data.message,
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    html: 'Ocurrió un error al procesar la solicitud.',
+                });
+                console.error('Error:', error);
+            });
+        });
+    </script>

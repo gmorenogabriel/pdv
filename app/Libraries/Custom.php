@@ -2,6 +2,8 @@
 
 use Config\Services;
 use Hashids\Hashids;
+use ReflectionClass;
+use App\Controllers\Encripcion; // Importar la clase desde Libraries
 /* Estas van en todos los Controladores del proyecto */
 // use App\Libraries\Backend_lib;  // Permisos
 //use App\Libraries\Custom;
@@ -114,23 +116,23 @@ Class Custom {
 			return $data;
 		}
 		public static function desencriptoID(string $clase, string $funcion, string $id){
-			try {
-				// Instanciamos el Servicio
-				$hashids = Services::hashids();
+			try {	
 				if ( null !== $id) {			
-					log_message('debug', $clase . '/' . $funcion . ' - el ID recibido $id : ' . $id);
+					log_message('debug', 'Custom::desencriptoID  - ' . $clase . '/' . $funcion . ' Línea: ' . __LINE__ .  ' - el $id recibido : ' . $id);
 					
-					// Controlamos recibir cargado el id Encriptado
-					// Instanciamos el Servicio
-					$hashids = Services::hashids();
-					$id_desenc = implode('', $hashids->decode($id));
-					log_message('debug', $clase . '/' . $funcion . ' - el ID Desencriptado : ' . $id_desenc);
+					// Decodificamos el Id recibido que viene Encriptado
+					$id_desenc = Encripcion::decodeData($id);
+					
+					log_message('debug', 'Custom::desencriptoID  - ' . $clase . '/' . $funcion . ' Línea: ' . __LINE__ .  ' - el ID Desencriptado : ' . $id_desenc);
+
 					}else{
-						log_message('debug', $clase . '/' . $funcion . ' - el ID se recibió NULL : ' . $id);
+					
+						log_message('debug', 'Custom::desencriptoID  - ' . $clase . '/' . $funcion . ' Línea: ' . __LINE__ .  ' - el ID se recibió NULL : ' . $id);
 						$id_desenc = null;
+				
 					}
 				} catch (\Exception $e) {
-					log_message('debug', $clase . '/' . $funcion . ' - No se logro desencriptar el id recibido: ' . $id . ' ==> ' . json_encode($id_desenc));
+						log_message('debug', 'Custom::desencriptoID  - ' . $clase . '/' . $funcion . ' Línea: ' . __LINE__ . ' - No se logro desencriptar el id recibido: ' . $id . ' ==> ' . json_encode($id_desenc));
 						$id_desenc = null;
 				}	 
 			return $id_desenc;
@@ -291,5 +293,48 @@ Class Custom {
 			'type' => 'success',
 			'body' => 'El Artículo fue guardado exitosamente !!!'
 			]);		  
+		}
+		// -------------------------------------------------------------------------
+		// Inspecciona todos los Metodos de una Clase o Librería informando:
+		//
+		// -------------------------------------------------------------------------
+		// Invocacion:
+		// Invocacion Si accedes a http://tusitio.com/testcontroller/test/App-Controllers-Unidades
+		// 				http://localhost:8084/pdv/public/testcontroller/test/App-Libraries-Custom
+		// Resultado:
+		//				metodo1 (public)
+		//				metodoProtegido (protected)
+		//				metodoPrivado (private)
+		//
+        //
+		// Crear una instancia de la librería
+        // $custom = new Custom();
+		//
+		// Llamar al método listarMetodosDeClase pasando la clase que quieres inspeccionar
+        // $custom->listarMetodosDeClase(\App\Libraries\MyLibrary::class);
+        // $custom->listarMetodosDeClase(\App\Controllers\OtroControlador::class);
+
+		//
+		// -------------------------------------------------------------------------
+		public static function listarMetodosDeClase($clase){
+		//public function listarMetodosDeClase($clase){
+			try {
+				// Usamos ReflectionClass para inspeccionar la clase
+				$reflection = new ReflectionClass($clase);
+
+				// Obtener todos los métodos de la clase (públicos, protegidos, privados)
+				$metodos = $reflection->getMethods();
+
+				echo "<pre>";
+				foreach ($metodos as $metodo) {
+					// Mostrar el nombre y visibilidad del método
+					$visibilidad = implode(' ', Reflection::getModifierNames($metodo->getModifiers()));
+					echo $metodo->getName() . " (" . $visibilidad . ")\n";
+				}
+				echo "</pre>";
+			} catch (\ReflectionException $e) {
+				// Manejo de errores si la clase no existe
+				echo "Error: " . $e->getMessage();
+			}
 		}
 	}	

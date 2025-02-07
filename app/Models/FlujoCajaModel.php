@@ -62,8 +62,35 @@ class FlujoCajaModel extends Model{
         }else{
             return '0';
         }
-
     }
-}   
+   // Función para insertar el registro asegurando que 'activo' se guarde como 1
+    public function insertar($data)
+    {
+        // Si no se proporciona el valor de 'activo', configurarlo como 1
+        if (!isset($data['activo'])) {
+            $data['activo'] = 1;
+        }
+
+        // Verificar si ya existe un registro con 'nombre' o 'nombre_corto' donde 'activo' = 1
+        $nombreExistente = $this->where('nombre', $data['nombre'])->where('activo', 1)->first();
+        $nombreCortoExistente = $this->where('nombre_corto', $data['nombre_corto'])->where('activo', 1)->first();
+
+        // Si ya existe, retornar error
+        if ($nombreExistente) {
+            return ['status' => 'error', 'message' => 'El campo nombre ya existe.'];
+        }
+
+        if ($nombreCortoExistente) {
+            return ['status' => 'error', 'message' => 'El campo nombre_corto ya existe.'];
+        }
+
+        // Si no existe, insertar el registro con 'activo' = 1
+        if ($this->save($data)) {
+            return ['status' => 'success', 'message' => 'Registro insertado correctamente.'];
+        } else {
+            return ['status' => 'error', 'message' => 'Hubo un problema al insertar el registro.'];
+        }
+    }
+}
 
 ?>

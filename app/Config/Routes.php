@@ -30,7 +30,8 @@ $routes->setAutoRoute(false);
 $routes->get('/', 'Usuarios::login');
 
 $routes->group('/',['namespace' => 'App\Controllers'],function($routes){
-		$routes->get('testDev',   				'Unidades::testDev',   			['as' => 'testDev']);
+		$routes->get('testcontroller/test/(:any)', 		'TestController::test/$1');
+		$routes->get('unidades/testDev/(:any)',	        'Unidades::testDev/$1',			['as' => 'testDev']);
         $routes->get('login',            				'Usuarios::login',    			['as' => 'usuarios']);   // Web de Ingreso http://localhost:8084/pdv/public/login
 		$routes->get('dash',             				'Dashboard::index',    			['as' => 'dash']); 
         $routes->post('usuarios/valida', 				'Usuarios::valida',   			['as' => 'valida']);
@@ -38,8 +39,8 @@ $routes->group('/',['namespace' => 'App\Controllers'],function($routes){
         $routes->get('flujocaja',        				'FlujoCaja::index',   			['as' => 'flujocaja']);
 		$routes->get('flujocaja/entradas',      		'FlujoCaja::entradas',   		['as' => 'flujocajaentradas']);
 		$routes->get('flujocaja/salidas',      			'FlujoCaja::salidas',   		['as' => 'flujocajasalidas']);		
-		$routes->post('flujocaja/guardarentrada',        'FlujoCaja::guardarentrada', 	['as' => 'flujocajaguardarentrada']);		
-		$routes->post('flujocaja/guardarsalida',         'FlujoCaja::guardarsalida', 	['as' => 'flujocajaguardarsalida']);				
+		$routes->post('flujocaja/guardarentrada',       'FlujoCaja::guardarentrada', 	['as' => 'flujocajaguardarentrada']);		
+		$routes->post('flujocaja/guardarsalida',        'FlujoCaja::guardarsalida', 	['as' => 'flujocajaguardarsalida']);				
 		$routes->get('flujocaja/generaExcel',			'FlujoCaja::generaExcel',   	['as' => 'flujoexcel']);
 		$routes->get('flujocaja/generaPdf',				'FlujoCaja::generaPdf',   		['as' => 'flujopdf']);
 /*      --------- */		
@@ -54,8 +55,9 @@ $routes->group('/',['namespace' => 'App\Controllers'],function($routes){
 		$routes->post('unidades/actualizar/(:any)',		'Unidades::actualizar/$1',		['as' => 'unidadesactual']);
 		$routes->post('unidades/insertar',				'Unidades::insertar',			['as' => 'unidadesinsertar']);
 		$routes->get('unidades/eliminar/(:any)',		'Unidades::eliminar/$1',		['as' => 'unidadeseliminar']);
-		$routes->get('unidades/encode/(:num)', 			'Unidades::encodeData/$1');
-		$routes->get('unidades/decode/(:any)', 			'Unidades::decodeData/$1');
+		$routes->get('unidades/eliminados',      		'Unidades::eliminados',			['as' => 'unidadeseliminados']);		
+		$routes->get('encripcion/encodeData/(:num)', 	'Encripcion::encodeData/$1');
+		$routes->get('encripcion/decodeData/(:any)', 	'Encripcion::decodeData/$1');
 		$routes->get('unidades/generaExcel',			'Unidades::generaExcel',   		['as' => 'unidadesexcel']);
 		$routes->get('unidades/generaPdf',				'Unidades::generaPdf',   		['as' => 'unidadespdf']);
 /*      --------- */

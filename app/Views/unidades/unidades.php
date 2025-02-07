@@ -3,20 +3,21 @@
             <!-- Contenido principal -->
             <div class="wrapper">
                 <div class="container">
-                    <h1 class="mt-2"><?php echo $titulo . " - " . $fecha; ?></h1>
-			
-				<?php d($datos[0]); ?>  
-					<?php foreach ($datos as $dato) { ?>
-						<?php echo $dato['id'] . ' ' .$dato['nombre'] . ' ' . $dato['id_enc'] . '<br/>'; ?>
-					 <?php } ?>
-						
+                    <h1 class="mt-2"><?php echo esc($titulo) . " - " . esc($fecha); ?></h1>
+<!-- ? php dd($datos); ?>					
+		
+				< ? php d($datos[0]); ?>  
+					< ? php foreach ($datos as $dato) { ?>
+						< ? php echo $dato['id'] . ' ' .$dato['nombre'] . ' ' . $dato['id_enc'] . '<br/>'; ?>
+					 < ? php } ?>
+ -->					
 					<hr color="cyan"></hr>					
           	<!--      
 					<hr class="border border-info"> -->
                     <div class="d-flex justify-content-between">
                         <div>
                             <a href="<?php echo base_url('unidades/nuevo'); ?>" class="btn btn-primary">Agregar</a>
-                            <a href="<?php echo base_url('unidades/eliminados/' . $dato['id_enc']); ?>" class="btn btn-warning">Eliminados</a>
+                            <a href="<?php echo base_url('unidades/eliminados'); ?>" class="btn btn-warning">Eliminados</a>
                         </div>
                         <div>
                             <button id="btnGeneraExcelUnidades" type="button" class="btn btn-success">
@@ -46,9 +47,9 @@
                             <tbody>
                                 <?php foreach ($datos as $dato) { ?>
                                     <tr>
-                                        <td><?php echo $dato['id']; ?></td>
-                                        <td><?php echo $dato['nombre']; ?></td>
-                                        <td><?php echo $dato['nombre_corto']; ?></td>
+                                        <td><?= esc($dato['id']); ?></td>
+                                        <td><?= esc($dato['nombre']); ?></td>
+                                        <td><?= esc($dato['nombre_corto']); ?></td>
                                         <td>
                                             <a href="<?php echo base_url('unidades/editar/' . $dato['id_enc']); ?>" class="btn btn-success">
                                                 <i class="fas fa-pencil-alt"></i>

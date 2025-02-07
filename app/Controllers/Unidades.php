@@ -11,7 +11,7 @@ use Config\Services;
 use Hashids\Hashids;
 use App\Models\UnidadesModel;
 use App\Models\SweetMessageModel;
-use ReflectionMethod;
+// use ReflectionMethod;
 
 class Unidades extends BaseController{
 	
@@ -23,6 +23,7 @@ class Unidades extends BaseController{
 	protected $hashids;
 	protected $miClaveSecreta;
 	protected $validation;
+	public $threshold = 4;
 	
 	/* ------------------------------------------------ */
 	/* Funcion __construct()                            */
@@ -53,6 +54,12 @@ class Unidades extends BaseController{
         $this->clase = $controlador[max(array_keys($controlador))] ;
         $this->funcion= $router->methodName();
 	
+		// Obtener el nombre de la clase actual
+        //$this->clase = get_class($this);
+        
+        // Obtener el nombre del método actual
+        //$this->funcion = __METHOD__;
+        
 		
   // d($this->funcion);
   // d($controlador);
@@ -101,8 +108,6 @@ class Unidades extends BaseController{
                 ],
             ];
     }
-	
-	
 
 	/* ------------------------------------------------ */
 	/* Funcion index($activo = 0)                       */
@@ -159,8 +164,8 @@ class Unidades extends BaseController{
     {
         $unidades = $this->unidades->where('activo',$activo)->findAll();
         $data = [ 
-            'titulo' => 'Unidades eliminadas',
-            'datos' => $unidades,
+            'titulo'	=> 'Unidades eliminadas',
+            'datos' 	=> $unidades,
 			'fecha'   	=> $this->fecha_hoy,
         ];
 		echo view('header');
@@ -186,38 +191,251 @@ class Unidades extends BaseController{
         ];
 
         echo view('header');
-		echo view($this->clase.'/nuevo', $data);
+		echo view($this->clase . '/nuevo', $data);
+//		echo view('unidades/nuevo', $data);
 		echo view('footer');
     }
+	
+	
 	/* ------------------------------------------------ */
 	/* Funcion insertar()                               */
-	/* ------------------------------------------------ */	
-    public function insertar(){
+	/* ------------------------------------------------ */
+	public function insertar()
+	{
+		// Instanciamos el Modelo de Datos
+		$model = model('App\Models\UnidadesModel'); // Cargar el modelo
+        // Obtén los datos enviados por POST
+        $requestData = $this->request->getPost(esc(['nombre', 'nombre_corto', 'activo']));
+		$requestData['activo'] = 1;
 		
-		log_message('debug', "Funcion insertar " . $this->request->getPost('nombre'));
-        
-    // Limpiar los datos del Input: ombre y nombre_corto
+		log_message('info', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - Nombre: ' . $requestData['nombre']);
+		log_message('info', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - Nombre_corto: ' . $requestData['nombre_corto']);
+		log_message('info', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - Activo: ' . $requestData['activo']);
+
+		// Las validaciones están en el Modelo de Datos
+        // Validar los datos antes de intentar guardarlos con las
+		// Reglas cargadas en el Controlador
+        // if (!$this->validate($validationRules, $validationMessages)) {
+
+		// Reglas cargadas en el Modelo 
+		if (!$model->validate($requestData)) {
+			// Obtener errores de validación del modelo
+			$errors = $model->errors();
+			
+			// Formatear errores para SweetAlert2 (unirlos con "\n")
+			//$errorMessages = implode("\n", $errors);
+			$errorMessages = implode('<br>', $errors);		
+			
+			if(isset($errorMessages)){
+				log_message('info', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - No valido las reglas: ' . $errorMessages);	
+			}
+
+		// Verificar si el registro ya existe
+        if ($model->exists($requestData['nombre'], $requestData['nombre_corto'])) {
+		log_message('info', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - llamo al Modelo saveOrUpdate.');	
+        // Llamar al modelo para insertar o actualizar el registro
+			$resultado = $model->saveOrUpdate($requestData);
+        }
+
+            
+			// Retornar respuesta en formato JSON con los errores
+            //return $this->response->setJSON([
+            //    'status' => 'error',
+			//	'message'=> $errorMessages, // Mensajes como texto legible
+            //]);
+        }
+		try {
+			// Intentar guardar los datos en la base de datos
+			if (!$model->saveOrUpdate($requestData)) {
+				// Manejar errores específicos del modelo (por ejemplo, reglas adicionales o errores de BD)
+				$modelErrors = $model->errors();
+				$errorMessages = implode("<br>", $modelErrors);
+				log_message('info', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - No se pudieron guardar los datos.' . $errorMessages);	
+				return $this->response->setJSON([
+					'status' => 'error',
+					'message' => $errorMessages,
+				]);
+			}
+
+			// Éxito
+			log_message('info', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - Datos guardados exitosamente.' );	
+			return $this->response->setJSON([
+				'status' => 'success',
+				'message' => 'Datos guardados exitosamente.',
+			]);
+		} catch (\CodeIgniter\Database\Exceptions\DatabaseException $e) {
+			if ($e->getCode() === 1062) {
+				log_message('info', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - Clave duplicada => 1062 ' . $e->getCode());	
+				// Error de clave duplicada
+				return $this->response->setJSON([
+					'status' => 'error',
+					'message' => 'Error: Clave duplicada. El registro ya existe.',
+				]);
+			}
+
+			// Otros errores de base de datos
+			log_message('error', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - ' . $e->getMessage());
+			return $this->response->setJSON([
+				'status' => 'error',
+				'message' => 'Error en la base de datos: ' . $e->getMessage(),
+			]);
+		}
+	}
+	
+//===================================================//
+// funcion VIEJA
+//===================================================//
+	    public function insertarVie(){
+			
+		// Limpiar los datos del Input: ombre y nombre_corto
         $nombre = trim($this->request->getPost('nombre'));
         $nombre_corto = trim($this->request->getPost('nombre_corto'));
         $nombre_corto = preg_replace('/\r|\n/', '', $nombre_corto); // Limpiar saltos de línea
-
-        // Reemplazar los datos en la solicitud
-        $this->request->setGlobal('POST', [
-            'nombre' => $nombre,
-            'nombre_corto' => $nombre_corto,
-        ]);
+		
+		log_message('info', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - trim Nombre: ' . $nombre);
+		log_message('info', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - trim Nombre_corto: ' . $nombre_corto);
 
 		// Obtener los datos del formulario
         $datosValidar = $this->request->getPost();
-		
-		log_message('debug', "nombre DESPUES del TRIM: " . $this->request->getPost('nombre'));
-		log_message('debug', "nombre_corto DESPUES del TRIM: " . $this->request->getPost('nombre_corto'));
-	
+d($datosValidar);		
+        // Validamos Reglas
 		if($this->request->getMethod() === "POST" &&
-		   $this->validation->setRules($this->reglas)->run(['nombre'=>$nombre, 'nombre_corto'=>trim($nombre_corto)])) {
+		   $this->validation->setRules($this->reglas)->run($datosValidar)) {
+		  // $this->validation->setRules($this->reglas)->run(['nombre'=>$nombre, 'nombre_corto'=>trim($nombre_corto)])) {
+			log_message('info', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - datos validados, proseguimos con la Insercion de los datos.');
+
+            // Valido las Reglas
+            $nombre = $this->request->getPost('nombre') ? $nombre = $this->request->getPost('nombre') : '';		
+			$data = [
+			    'titulo'		=> 'Ingreso de dinero',
+                'fecha'			=> $this->request->getPost('fechahoy'),
+                'nombre'	    => $nombre,
+                'nombre_corto'	=> $nombre_corto,
+            ];
+			// --------------------------------------
+			// Mensajes Alerta SweetAlert 2
+			// --------------------------------------
+			$msgAlerta	= new SweetMessageModel();
+			
+			// --------------------------------------
+			// --==> Insertamos los datos <==---
+			// --------------------------------------
+			try {
+				// Intenta guardar los datos
+				if (!$this->unidades->save($data)) {
+					// Validación de errores de CodeIgniter si el save() falla (sin lanzar excepción)
+					$errors = $this->unidades->errors();
+					if ($errors) {
+						return $this->response->setJSON([
+							'status' => 'error',
+							'message' => $errors
+						]);
+					}
+				}
+
+				// Operación exitosa - Mensaje Alerta SweetAlert2
+				log_message('info', $this->clase . '/' . $this->funcion . ' Linea: ' . __LINE__ .  ' - Consulta ejecutada satisfactoria: ' . $query = $this->unidades->db->getLastQuery()); 
+				$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'insertar');
+				// --------------------------------------				
+				/* return $this->response->setJSON([
+					'status' => 'success',
+					'message' => 'Datos guardados exitosamente'
+				]);*/
+			} catch (\CodeIgniter\Database\Exceptions\DatabaseException $e) {
+				// Captura el error si ocurre un problema con la base de datos
+				if ($e->getCode() === 1062) { // Código de error 1062: clave duplicada en MySQL
+					// Error en la inserción
+					log_message('error', $this->clase . '/' . $this->funcion . ' Linea: ' . __LINE__ .  ' - Clave duplidada: ' . $e->getCode());
+					/*
+					return $this->response->setJSON([
+						'status' => 'error',
+						'message' => 'Clave duplicada: el registro ya existe.'
+					]);*/
+				}
+
+			// Para otros errores, puedes registrar el problema y enviar una respuesta genérica
+			log_message('error', $this->clase . '/' . $this->funcion . ' Linea: ' . __LINE__ .  ' - Otros errores al insertar: ' . $e->getMessage());
+			}
+			/*return $this->response->setJSON([
+				'status' => 'error',
+				'message' => 'Ocurrió un error al guardar los datos. Intenta nuevamente.'
+			]);*/
+
+			// Error en la inserción lo toma de la Base de Datos
+			$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'info');
+			
+			// Traemos todos los registros de la BD
+			$data	= $this->unidades->obtenerTodosLosRegistros();
+			
+			// Llamamos a las vistas
+			echo view('header');
+			echo view('sweetalert2', $msgToast);            
+			echo view('unidades/unidades', $data);
+			echo view('footer');			
+
+        }else{
+			// Captura los errores
+			$errors = $this->validation->getErrors();
+
+			// Mostrar los errores
+			foreach ($errors as $field => $error) {
+				log_message('info', $this->clase . '/' . $this->funcion . ' Linea: ' . __LINE__ . ' - Campo: ' . $field . ' Error: ' . $error);
+				// echo "Error en el campo $field: $error<br>";
+			}
+			//echo "</pre>";
+			log_message('info', $this->clase . '/' . $this->funcion . ' Linea: ' . __LINE__ .  ' - No valido las reglas ' . json_encode($this->validation->getErrors()));
+			
+			// Mensajes Alerta SweetAlert 2 por fallo
+			$msgAlerta	= new SweetMessageModel();
+			log_message('info', $this->clase . '/' . $this->funcion . ' Linea: ' . __LINE__ .  ' - instancio SweetMessageModel');
+			$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'reglasinvalidas');
+			if (isset($msgToast['accion']) == 'sinReglas') {
+				log_message('info', $this->clase . '/' . $this->funcion . ' Linea: ' . __LINE__ .  ' - Se deben definir en sweet_message las, las alertas para: ' . $this->clase . '/' . $this->funcion);
+				}
+ 			// Cargamos $Data para enviar a las vistas
+			// Traemos todos los registros de la BD
+			//$data	= $this->unidades->obtenerTodosLosRegistros();
+			
+			// Llamamos a las vistas
+			echo view('header'); 
+			echo view('sweetalert2', $msgToast);             
+			echo view('unidades/nuevo', [
+				'titulo'		=> 'Ingreso de dinero',
+                'fecha'			=> $this->request->getPost('fechahoy'),
+                'nombre'		=> $this->request->getPost('nombre'),
+                'nombre_corto'	=> $this->request->getPost('nombre_corto'),
+				'activo'		=> $this->request->getPost('activo'),
+				'validation' 	=> $errors,
+				]); 
+			echo view('footer');				 
+
+		  }
+  }
+
+	
+	/* ------------------------------------------------ */
+	/* Funcion insertar2()                               */
+	/* ------------------------------------------------ */	
+    public function insertar2(){
+
+		// Limpiar los datos del Input: ombre y nombre_corto
+        $nombre = trim($this->request->getPost('nombre'));
+        $nombre_corto = trim($this->request->getPost('nombre_corto'));
+        $nombre_corto = preg_replace('/\r|\n/', '', $nombre_corto); // Limpiar saltos de línea
+		
+		log_message('info', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - trim Nombre: ' . $nombre);
+		log_message('info', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - trim Nombre_corto: ' . $nombre_corto);
+
+		// Obtener los datos del formulario
+        $datosValidar = $this->request->getPost();
+d($datosValidar);		
+
+		if($this->request->getMethod() === "POST" &&
+		   $this->validation->setRules($this->reglas)->run($datosValidar)) {
+		  // $this->validation->setRules($this->reglas)->run(['nombre'=>$nombre, 'nombre_corto'=>trim($nombre_corto)])) {
 			// Validado
 			// $errors = $validation->getErrors();
-			log_message('info', 'Datos validados, proseguimos con la Insercion de los datos.');
+			log_message('info', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ .  ' - datos validados, proseguimos con la Insercion de los datos.');
 		    // si necesito validar las reglas desde el propio controlador entones:
 			// //&& $this->validate($this->reglasnombre)) {
             // Valido las Reglas
@@ -238,7 +456,8 @@ class Unidades extends BaseController{
 			// --------------------------------------
 			if ($this->unidades->save($data)) {
 				// Insercion EXITOSA			
-				log_message('info', 'Consulta ejecutada: ' . $query = $this->unidades->db->getLastQuery()); // Acceso correcto al objeto db desde el modelo
+				// Acceso correcto al objeto db desde el modelo
+				log_message('info', $this->clase . '/' . $this->funcion . ' Linea: ' . __LINE__ .  ' - Consulta ejecutada: ' . $query = $this->unidades->db->getLastQuery()); 
 
 				// Inserción EX"TOSA - Mensajes Alerta SweetAl 2
 				$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'insertar');
@@ -248,7 +467,7 @@ class Unidades extends BaseController{
 			   // Obtener los errores
  
 				// Error en la inserción
-				 log_message('error', 'Error al guardar el registro: ' . json_encode($this->unidades->errors()));
+				 log_message('error', $this->clase . '/' . $this->funcion . ' Linea: ' . __LINE__ .  ' - Error al guardar el registro: ' . json_encode($this->unidades->errors()));
 			
 				// Error en la inserción lo toma de la Base de Datos
 				$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'info');
@@ -264,25 +483,24 @@ class Unidades extends BaseController{
 			echo view('footer');			
 
         }else{
-			$errors = $this->validation->getErrors();
-
-		// Mostrar los errores
-			foreach ($errors as $field => $error) {
-				log_message('debug', 'Campo: ' . $field . ' Error: ' . $error);
-				// echo "Error en el campo $field: $error<br>";
-			}
-			//echo "</pre>";
-			log_message('info', 'No valido las reglas ' . json_encode($this->validation->getErrors()));
 			// Captura los errores
 			$errors = $this->validation->getErrors();
 
+			// Mostrar los errores
+			foreach ($errors as $field => $error) {
+				log_message('info', $this->clase . '/' . $this->funcion . ' Linea: ' . __LINE__ . ' - Campo: ' . $field . ' Error: ' . $error);
+				// echo "Error en el campo $field: $error<br>";
+			}
+			//echo "</pre>";
+			log_message('info', $this->clase . '/' . $this->funcion . ' Linea: ' . __LINE__ .  ' - No valido las reglas ' . json_encode($this->validation->getErrors()));
+			
 
 			// Mensajes Alerta SweetAlert 2 por fallo
 			$msgAlerta	= new SweetMessageModel();
-			log_message('debug', 'instancio SweetMessageModel');
+			log_message('info', $this->clase . '/' . $this->funcion . ' Linea: ' . __LINE__ .  ' - instancio SweetMessageModel');
 			$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'reglasinvalidas');
 			if (isset($msgToast['accion']) == 'sinReglas') {
-				log_message('debug', $this->clase . '/' . $this->funcion . ' - Se deben definir en sweet_message las, las alertas para: ' . $this->clase . '/' . $this->funcion);
+				log_message('info', $this->clase . '/' . $this->funcion . ' Linea: ' . __LINE__ .  ' - Se deben definir en sweet_message las, las alertas para: ' . $this->clase . '/' . $this->funcion);
 				}
  			// Cargamos $Data para enviar a las vistas
 			// Traemos todos los registros de la BD
@@ -398,52 +616,33 @@ class Unidades extends BaseController{
 	/* Funcion actualizar($id)                          */
 	/* ------------------------------------------------ */	
 	public function actualizar($id){
-	
-	dd("Actualiar");
-	
-		log_message('debug', 'Actualizar $id ' . $id);
-		log_message('debug', 'Funcion insertar ' . $this->request->getPost('nombre'));
+
+		$id_desenc = Custom::desencriptoID($this->clase, $this->funcion, $id);
+		log_message('debug', $this->clase . '/' . $this->funcion . ' - retornamos de la libreria Custom::desencriptoID: ' . $id);
 		
 	  if (!is_string($id)) {
-		log_message('debug', "El $id recibido no es un STRING" . $this->request->getPost('id'));	
+		log_message('debug', this->clase . '/' . $this->funcion . ' - El $id recibido no es un STRING ' . $this->request->getPost('id'));	
         throw new \InvalidArgumentException("El parámetro ID debe ser una cadena de texto.");
 		}
-		
-	// Instanciamos el Servicio
-				$hashids = Services::hashids();
-				$id_decoded = $hashids->decode($id);
-				$id_desenc = isset($id_decoded[0]) ? (string) $id_decoded[0] : null;
-
-				log_message('debug', $this->clase . '/' . $this->funcion . ' id       : ' . $id );
-				log_message('debug', $this->clase . '/' . $this->funcion . ' id_desenc: ' . $id_desenc );
 				
-    // Limpiar los datos del Input: ombre y nombre_corto
+		// Limpiar los datos del Input: ombre y nombre_corto
         $nombre = ltrim(rtrim($this->request->getPost('nombre')));
         $nombre_corto = ltrim(rtrim($this->request->getPost('nombre_corto')));
        // $nombre_corto = preg_replace('/\r|\n/', '', $nombre_corto); // Limpiar saltos de línea
-
+		log_message('debug', $this->clase . '/' . $this->funcion . ' - nombre DESPUES del TRIM: ' . $nombre);
+	   
         // Reemplazar los datos en la solicitud
         $this->request->setGlobal('POST', [
             'nombre' => $nombre,
             'nombre_corto' => $nombre_corto,
         ]);
-
-		// Obtener los datos del formulario
-        $datosValidar = $this->request->getPost();
-		var_dump($datosValidar);
-		
-		log_message('debug', "nombre DESPUES del TRIM: " . $this->request->getPost('nombre'));
-		log_message('debug', "nombre DESPUES del TRIM: " . $this->request->getPost('nombre'));
-		log_message('debug', "nombre_corto DESPUES del TRIM: " . $this->request->getPost('nombre_corto'));
-	
+			
 		if($this->request->getMethod() === "POST" &&
 		   $this->validation->setRules($this->reglas)->run(['nombre'=>$nombre, 'nombre_corto'=>trim($nombre_corto)])) {
 			// Validado
-			// $errors = $validation->getErrors();
-			log_message('info', 'Datos validados, proseguimos con la Insercion de los datos.');
-		    // si necesito validar las reglas desde el propio controlador entones:
-			// //&& $this->validate($this->reglasnombre)) {
-            // Valido las Reglas
+			log_message('info', $this->clase . '/' . $this->funcion . ' - Datos validados, proseguimos con la Insercion de los datos.');
+	
+			// Valido las Reglas
             $nombre = $this->request->getPost('nombre') ? $nombre = $this->request->getPost('nombre') : '';		
 			$data = [
 				'id_enc' 		=> $id,
@@ -456,6 +655,7 @@ class Unidades extends BaseController{
 			// Mensajes Alerta SweetAlert 2
 			// --------------------------------------
 			$msgAlerta	= new SweetMessageModel();
+			
 			// Verificamos que ya no exista el registro
 			// --------------------------------------
 			// --==> Insertamos los datos <==---
@@ -463,7 +663,7 @@ class Unidades extends BaseController{
 			try {
 				$this->unidades->update($id_desenc, $data);
 				// Insercion EXITOSA			
-				log_message('info', 'Consulta ejecutada: ' . $query = $this->unidades->db->getLastQuery()); // Acceso correcto al objeto db desde el modelo
+				log_message('debug', $this->clase . '/' . $this->funcion . ' - Consulta ejecutada: ' . $query = $this->unidades->db->getLastQuery()); // Acceso correcto al objeto db desde el modelo
 
 				// Inserción EX"TOSA - Mensajes Alerta SweetAl 2
 				$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'insertar');	
@@ -475,23 +675,24 @@ class Unidades extends BaseController{
 				   // Obtener los errores
 	 
 					// Error en la inserción
-					 log_message('error', 'Error al guardar el registro: ' . json_encode($this->unidades->errors()));
+					 log_message('error', $this->clase . '/' . $this->funcion . ' - Error al guardar el registro: ' . json_encode($this->unidades->errors()));
 				
 					// Error en la inserción lo toma de la Base de Datos
 					$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'info');
 				}
 			// Traemos todos los registros de la BD
-//			$data	= $this->unidades->obtenerTodosLosRegistros();
+			$data	= $this->unidades->obtenerTodosLosRegistros();
 		
 		
 		// Leemos toda la tabla
         $unArray = $this->unidades->where('activo','1')->findAll();
 		// Instanciamos el Servicio
-		$hashids = Services::hashids();
+		// hashids = Services::hashids();
 		// Generar el ID encriptado para cada registro
 		foreach ($unArray as &$dato) {		
-			$dato['id_enc'] = $hashids->encode($dato['id']);
-			log_message('debug', $this->clase . '/' . $this->funcion . ' - ' . $hashids->encode($dato['id']));
+			//$dato['id_enc'] = $hashids->encode($dato['id']);
+			$dato['id_enc'] = Encripcion::encodeData($id);
+			log_message('debug', $this->clase . '/' . $this->funcion . ' - ' . Encripcion::encodeData($id));
 		}
 		// ------------------------------------------------------------------
 		// IMPORTANTE: Romper la referencia después del bucle
@@ -517,18 +718,19 @@ class Unidades extends BaseController{
 
 		// Mostrar los errores
 			foreach ($errors as $field => $error) {
-				log_message('debug', 'Campo: ' . $field . ' Error: ' . $error);
-				// echo "Error en el campo $field: $error<br>";
+				log_message('debug', $this->clase . '/' . $this->funcion . ' - Campo: ' . $field . ' Error: ' . $error);
+				echo "Error en el campo $field: $error\n";
 			}
 			//echo "</pre>";
-			log_message('info', 'No valido las reglas ' . json_encode($this->validation->getErrors()));
+			log_message('info', $this->clase . '/' . $this->funcion . ' -  No valido las reglas ' . json_encode($this->validation->getErrors()));
 			// Captura los errores
 			$errors = $this->validation->getErrors();
-
+			
+			dd($errors);
 
 			// Mensajes Alerta SweetAlert 2 por fallo
 			$msgAlerta	= new SweetMessageModel();
-			log_message('debug', 'instancio SweetMessageModel');
+			log_message('debug', $this->clase . '/' . $this->funcion . ' - instancio SweetMessageModel');
 			$msgToast   = $msgAlerta->obtenerUnModelo($this->clase, 'reglasinvalidas');
 			if (isset($msgToast['accion']) == 'sinReglas') {
 				log_message('debug', $this->clase . '/' . $this->funcion . ' - Se deben definir en sweet_message las, las alertas para: ' . $this->clase . '/' . $this->funcion);
@@ -536,14 +738,18 @@ class Unidades extends BaseController{
  			// Cargamos $Data para enviar a las vistas
 			// Traemos todos los registros de la BD
 			//$data	= $this->unidades->obtenerTodosLosRegistros();
-			
+
+			// Leemos toda la tabla
+			$unArray = $this->unidades->where('activo','1')->findAll();
+
 			// Llamamos a las vistas
 			echo view('header'); 
 			echo view('sweetalert2', $msgToast);             
 			echo view('unidades/unidades', [
 				'id_enc' 		=> $id,			
-				'titulo'		=> 'Ingreso de dinero',
+				'titulo'		=> 'Unidades ',
                 'fecha'			=> $this->request->getPost('fechahoy'),
+			    'datos'   		=> $unArray,
                 'nombre'		=> $nombre,
                 'nombre_corto'	=> $nombre_corto,
 				'validation' 	=> $errors,
@@ -557,36 +763,37 @@ class Unidades extends BaseController{
 	/* Funcion editar(string $id)                       */
 	/* ------------------------------------------------ */	
     public function editar($id){
-		try {
-			if ( null !== $id) {
-				// Controlamos recibir cargado el id Encriptado
-				// Instanciamos el Servicio
-				$hashids = Services::hashids();
-				$id_decoded = $hashids->decode($id);
-				$id_desenc = isset($id_decoded[0]) ? (string) $id_decoded[0] : null;
-
-				log_message('debug', $this->clase . '/' . $this->funcion . ' id       : ' . $id );
-			//	log_message('debug', $this->clase . '/' . $this->funcion . ' id_desenc: ' . $id_desenc );
+			
+			$id_desenc = Custom::desencriptoID($this->clase, $this->funcion, $id);
+			log_message('debug', $this->clase . ' /' . $this->funcion . ' Línea: ' . __LINE__ . ' - retornamos de la libreria Custom::desencriptoID: ' . $id);
+			 
+			if ( $id_desenc !== null ) {
 				$unArray = $this->unidades->where('id', $id_desenc)->first();
+				$unDecodedArray = json_encode($unArray);
+				log_message('debug', $this->clase . '/' . $this->funcion . ' Línea: ' . __LINE__ . ' - array de datos: ' . $unDecodedArray);
 
-			$data = [ 
-				'titulo' => 'Editar '.$this->clase, 
-				'datos'  => $unArray,
-				'id_enc' => $id,
-				'fecha'  => $this->fecha_hoy,
-			];
+				try{
+					$this->unidades->update($id_desenc,	['activo' => 0]);   
+					$data = [ 
+						'titulo' => 'Editar '.$this->clase, 
+						'datos'  => $unArray,
+						'id_enc' => $id,
+						'fecha'  => $this->fecha_hoy,
+					];
 
-				echo view('header');
-				echo view('unidades/editar', $data);
-				echo view('footer');
-				}  else {
+						echo view('header');
+						echo view('unidades/editar', $data);
+						echo view('footer');
+						
+					}catch (\Exception $e) {
+							return ($e->getMessage());
+					}	 
+			} else{
 					echo "Error al tratar de acceder " . $this->clase;
-				}
-			} catch (\Exception $e) {
-					return ($e->getMessage());
-			}          
-          
+					return redirect()->to(base_url().'unidades');				
+			}         
     }
+	
 	public function testDev($id){
 
 		print_r($id);
@@ -598,31 +805,23 @@ class Unidades extends BaseController{
 	/* ------------------------------------------------ */
     public function eliminar($id){
 	
-			$id_desenc = Custom::desencriptoID ($this->clase, $this->funcion, $id);
-			log_message('debug', $this->clase . '/' . $this->funcion . ' - retornamos de la libreria Custom::desencriptoID: ' . $id);
-			 if ( $id_desenc !== null ) {
-			
-			// log_message('debug', $this->clase . '/' . $this->funcion . ' - el ID viene cargado $id : ' . $id);
-				// // Controlamos recibir cargado el id Encriptado
-				// // Instanciamos el Servicio
-				// $hashids = Services::hashids();
-				// $id_desenc = $hashids->decode($id);
-				// log_message('debug', $this->clase . '/' . $this->funcion . ' - Desencriptamos: ' . $id . ' ==> ' . json_encode($id_desenc));
+		$id_desenc = Custom::desencriptoID($this->clase, $this->funcion, $id);
+		log_message('debug', $this->clase . '/' . $this->funcion . ' - retornamos de la libreria Custom::desencriptoID: ' . $id);
+		 if ( $id_desenc !== null ) {
 
-				$unArray = $this->unidades->where('id', $id_desenc)->first();
-				$unDecodedArray = json_encode($unArray);
-				d($unDecodedArray);
-				log_message('debug', $this->clase . '/' . $this->funcion . ' - array de datos: ' . $unDecodedArray);
-				//dd(implode('', $unArray));
-				try{
-					$this->unidades->update($id_desenc,	['activo' => 0]);   
-					} catch (\Exception $e) {
-							return ($e->getMessage());
-						}	 
-				}else{
-					return redirect()->to(base_url().'unidades');				
-				}
+			$unArray = $this->unidades->where('id', $id_desenc)->first();
+			$unDecodedArray = json_encode($unArray);
+			log_message('debug', $this->clase . '/' . $this->funcion . ' - array de datos: ' . $unDecodedArray);
 
+			try{
+				$this->unidades->update($id_desenc,	['activo' => 0]);   
+				}catch (\Exception $e) {
+						return ($e->getMessage());
+				}	 
+			}else{
+				return redirect()->to(base_url().'unidades');				
+			}
+		return redirect()->to(base_url().'unidades');				
     }
 
 	/* ------------------------------------------------ */

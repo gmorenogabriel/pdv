@@ -1,6 +1,7 @@
 <?php namespace App\Controllers;
 // Capitulo 5 Punto de venta con CI4, cajas, usuarios, inicio y cierre de sesión
 use App\Controllers\BaseController;
+use ReflectionMethod;
 use CodeIgniter\I18n\Time;
 use App\Models\UsuariosModel;
 use App\Models\CajasModel;
@@ -282,7 +283,7 @@ $datosUsuario = $this->usuarios->where('usuario', $usuario)->first();
 		if (! $this->validate($reglasLogin)){
 		    return redirect()->back()->withInput()->with('errors',$this->validator->getErrors());
         }
-			log_message('debug', 'Funcion valida -  VALIDADAS las reglasLogin.');
+			log_message('debug', 'Funcion valida - VALIDADAS las reglasLogin.');
             $usuario  = $this->request->getPost('usuario');
             $password = $this->request->getPost('password');
             $datosUsuario = $this->usuarios->where('usuario', $usuario)->first();

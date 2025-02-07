@@ -6,7 +6,7 @@
         <!-- para las validaciones del Formulario -->
         <!-- Imprime los errores de las validaciones del Formulario  -->
   <?php if (isset($validation) && !empty($validation) && count($validation)>0) : ?>  
-  <!-- ? php print_r($validation); ?> -->
+  <?php print_r($validation); ?>
     <div class="alert alert-danger">
         <ul>
             <?php foreach ($validation as $field => $error): ?>

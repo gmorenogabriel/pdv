@@ -6,7 +6,7 @@ use Config\Services;
 
 class Encripcion extends BaseController
 {
-    public function encodeData($id)
+    public static function encodeData($id)
     {
         // Instanciamos el Servicio Hashids
         $hashids = Services::hashids();
@@ -16,12 +16,12 @@ class Encripcion extends BaseController
 		 return (string)$encoded;
     }
 
-    public function decodeData($encoded)
+    public static function decodeData($encoded)
     {
         // Obtén una instancia de Hashids
         $hashids = Services::hashids();
 		// Decodificar el ID codificado recibido como parámetro
-		$decoded = $hashids->decode($encoded);
-		return (string)$decoded[0];
+		$decoded = implode('', $hashids->decode($encoded));
+		return (string)$decoded;
     }
 }
